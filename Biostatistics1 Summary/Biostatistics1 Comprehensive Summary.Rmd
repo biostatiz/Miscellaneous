@@ -1,0 +1,3802 @@
+---
+title: "Biostatistics1 Comprehensive Summary"
+author: "Taehoon Ha"
+date: "12/5/2018"
+output: 
+    html_document:
+        toc: true
+        toc_float: 
+            toc_collapsed: false
+        toc_depth: 5
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = 'center')
+```
+
+***
+
+## Lecture2: Graphical and Numerical Summaries
+```{r}
+library(gapminder)
+data(gapminder)
+```
+
+### 1. Histogram
+hist( )의 주요 파라미터 중 하나는 freq다. freq의 기본값은 NULL이며, 값을 지정하지 않으면 히스토그램 막대가 각 구간별 데이터의 개수(즉, 빈도)로 그려진다. 만약 이 값이 FALSE면 다음 코드에서 보다시피 각 구간의 확률 밀도11 가 그려진다. 확률 밀도므로 막대 너비의 합이 1이 된다.
+```{r}
+# y-axis is frequency
+hist(gapminder$lifeExp, main="Frequency Histogram", xlab = "Life Expectancy (years)", freq = T)
+
+# y-axis is relative frequency
+hist(gapminder$lifeExp, main="Frequency Histogram", xlab = "Life Expectancy (years)", freq = F)
+```
+
+### 2. Density plot (Probability density function)
+```{r}
+hist(gapminder$lifeExp, probability = TRUE, 
+     main = "Histogram with a Kernal Density", 
+     xlab = "Life Expectancy (yrs)")
+lines(density(gapminder$lifeExp), col=2, lwd=2)
+```
+
+### 3. Boxplot
+```{r}
+x <- c(rnorm(100), c(-4, 5))
+boxplot(x)
+```
+
+```{r}
+x3 <- data.frame(X1 = rnorm(10000,0,1),
+                 X2 = rnorm(10000,5,1),
+                 X3 = rnorm(10000,0,2),
+                 X4 = rchisq(10000,2)-2,
+                 X5 = rt(10000, df=3))
+boxplot(x3, col=1:NCOL(x3), main = "Boxplots for Five Distributions")
+```
+
++ Pros:
+    + 1> effectiveness at identifying outlying observations
+    + 2> quick way to compare several distributions as can be seen in graphic with the boxplots corresponding to the 5 distributions
++ Cons: hides multimodality in the data.
+
+### 4. Q-Q plot
++ to display all the quantiles of a distribution
++ and to compare them to the quantiles of reference distribution
+    + e.g. From a qq-plot, in normal distribution, one can detect shifts in location, differences in scale/variability, and differences in shape.
+
+```{r}
+par(mfrow=c(2, 3))
+
+for(i in seq_len(NCOL(x3))) {
+    qqnorm(x3[,i], pch=20, col=i)
+    abline(0, 1)
+}
+```
+
++ (1st plot) two distributions are the same, both normal.
++ (2nd plot) shows a shift or diffrence in mean between one distribution compared to the other, but both are normal.
++ (3rd plot) illustrates a difference in the scale/variability (i.e., Variance, SD) between the two distributions.
++ (4th plot) demonstrates a difference in shape between the two distributions. The distribution is more skewed than a normal distribution.
++ (5th plot) demonstrates a difference in shape between the two distributions. The distribution has heavier tails than a normal distribution.
+
+### 5. Shape: skewness
+
+![image-20181205082456961](https://ws3.sinaimg.cn/large/006tNbRwly1fxw6t7r6ifj31e40nck57.jpg)
+
+<br>
+
++ skewness=0: the distribution is symmetric around its mean
++ skewness>0: positive skewness or right-skewed
++ skewness<0: negative skewness or left-skewed
+
+### 6. Scatterplot
+```{r}
+library(ggplot2)
+library(tidyverse)
+gapminder %>%
+    ggplot(aes(x = log(gdpPercap), y = lifeExp)) +
+    geom_point() +
+    theme_classic()
+```
+
+### 7. Covariance
++ can be used to assess the relationship between two variables, say x and y.
+
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fy0pb32plqj308m01wt8p.jpg)
+
+<br>
+
+### 8. Correlation Coefficient
+
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy0pafa5lfj30ac023q30.jpg)
+
+<br>
+
+```{r eval = F}
+# library(MASS)
+# par(mfrow = c(2, 2))
+# x <- mvrnorm(100, c(0, 0), matrix(c(1, 0, 0, 1), 2, 2, byrow = TRUE))
+# boxplot(data.frame(x), main = paste("Cor[x1,x2] = ", round(cor(x[, 1], 
+#     x[, 2]), 2), sep = ""))
+# 
+# x <- mvrnorm(100, c(0, 0), matrix(c(1, -0.75, -0.75, 1), 2, 2, byrow = TRUE))
+# boxplot(data.frame(x), main = paste("Cor[x1,x2] = ", round(cor(x[, 1], 
+#     x[, 2]), 2), sep = ""))
+# 
+# x <- mvrnorm(100, c(0, 0), matrix(c(1, 0.75, 0.75, 1), 2, 2, byrow = TRUE))
+# boxplot(data.frame(x), main = paste("Cor[x1,x2] = ", round(cor(x[, 1], 
+#     x[, 2]), 2), sep = ""))
+# 
+# x <- mvrnorm(100, c(0, 0), matrix(c(1, 0.99, 0.99, 1), 2, 2, byrow = TRUE))
+# boxplot(data.frame(x), main = paste("Cor[x1,x2] = ", round(cor(x[, 1], 
+#     x[, 2]), 2), sep = ""))
+```
+
+```{r}
+cor(gapminder[, 4:6])
+```
+
+## Activity2
+#### Effect of constants on summaries
+##### What is the effect on each measure when you perform a relocation (i.e. add a constant)?
++ mean:new mean = old mean + constant
++ median: it may (or may not) change a little; depending on the data
++ standard deviation: it does not change
++ variance: it does not change
++ IQR: the new boundaries = the old boundaries + constant
++ range: the new boundries = the old boundaries + constant
+
+##### What is the effect on each measure when you perform a rescaling (i.e. multiply by a constant)?
++ mean: new mean = old mean x constant
++ median: new median = old median x constant
++ standard deviation: new SD = old SD x constant
++ variance: new variance = old variance x constant^2 (WHY?)
++ IQR: the new boundaries = the old boundaries x constant
++ range: the new boundries = the old boundaries x constant
+
+```{r}
+library(survival)
+pbc <- pbc %>% data.frame
+pbc_augmented <- pbc %>% mutate(alb_times10 = albumin * 10, alb_plus10 = albumin + 10) 
+
+par(mfrow = c(2, 2))
+hist(pbc_augmented$albumin, main = "Albumin")
+hist(pbc_augmented$alb_plus10, main = "Albumin plus 10")
+hist(pbc_augmented$albumin, main = "Albumin", xlim = c(0, 16))
+hist(pbc_augmented$alb_plus10, main = "Albumin plus 10", xlim=c(0, 16))
+```
+
++ The shapes of the distributions are the same.
++ The spreads of the distributionsare the same.
++ The only difference is that in the albumin+10 histogram, all the values are shifted to the right by 10.
++ NOTE: for comparison, it is important that the x-axes are the same.
+
+```{r}
+par(mfrow = c(2, 2))
+hist(pbc_augmented$albumin, main = "Albumin")
+hist(pbc_augmented$alb_times10, main="Albumin times 10")
+hist(pbc_augmented$albumin, main = "Albumin", xlim = c(0, 50))
+hist(pbc_augmented$alb_times10, main = "Albumin times 10", xlim = c(0, 50))
+```
+
++ The shapes of the distributions are essentially the same.
++ The histogram for the albumin x 10 variable is more spread out.
++ In addition, the histogram is shifted to the right so that thatthe mean of the albumin x 10 variable is 10 x the mean of the albumin variable.
++ *When you multiply by a constant, the distribution has more variability*
++ NOTE: for comparison, it is important that the x-axes are the same.
+
+***
+
+## Lecture3: Statistical Inference
+
+    * PMF / PDF / CDF
+
+### 1. Probability Mass Function (PMF)
++ The PMF of a discrete random variable X is a function p with the follwing properties.
++ Non-negativity
++ Sum across all values is one
++ Example: Number of heads in 10 coin flips
+```{r}
+rbinom(n = 1, size = 10, prob = 0.5)
+# the result keeps chaning from sample to sample.
+```
+
++ What is the the PMF, e.g. what is the probability distribution of flipping a coin 10 times?
+    + One way to answer is by repeating the experiment many, many times, say 1,000. We can have R repeat this experiment for us rather than us doing this tedious work.
+```{r}
+x <- rbinom(n = 1000, size = 10, prob = 0.5)
+
+plot(table(x) / sum(table(x)), type = 'h', col = 2, lwd = 4,
+    xlab = "Number of Successes",
+    ylab = "relative frequency",
+    main = "Number of heads in 10 coin flips, repeated 1,000 times")
+```
+
+### 2. Example: Binomial distribution
+#### 1)2) `dbinom()` function:
++ function can be used to compute the binomial PMF.
+```{r}
+# the probability of getting a success in a single try, which in this case is the probability of getting a head in one flip, 0.5.
+dbinom(x = 5, size = 10, prob = 0.5)
+```
+
++ also can be used to show the entire distribution by setting up x as a vector.
+```{r}
+# If we have 10 tries (flips), then the set of the possible number of successes (heads) is x = 0, 1, 2, . . . , 10. We will save the probabilities in a variable 'p'.
+(p <- dbinom(x = 0:10, size = 10, prob = 0.5))
+```
+
+#### 3) plotting the binomial distribution's PMF
++ x-axis: the possible values of the random variable
++ y-axis: the probability of observing that value
+```{r}
+(p <- dbinom(x = 0:10, size = 10, prob = 0.5))
+pmf <- as.table(p)
+names(pmf) <- 0:10
+
+plot(pmf, col = 2, lwd = 4,
+    xlab = "Number of Successes",
+    ylab = "PMF",
+    main = "PMF of the Binomial Distribution")
+```
+
+#### 4) Accuracy of the simulation
+```{r}
+# compare how our computed distribution for the probability of each outcome compares to the exact probability obtained from the mathematical formula for the binomial PMF.
+table(x) / sum(table(x))
+pmf %>% round(3)
+```
+
+### 3. Probability Density Function (PDF) (i.e., density function)
++ The properties of the PDF are similar to those of the PMF, but extended to the case of real numbers.
++ Plotting the normal distribution
+```{r}
+curve(dnorm, from = -4, to = 4,
+     xlab = 'x',
+     ylab = "PDF",
+     main = "PDF of Standard Normal Distribution")
+
+curve(dnorm, from = -4, to = 4,
+     ylab = 'PDF',
+     main = 'Pr(X <= -1)')
+coord.x <- c(-4, seq(-4, -1, by = 0.1), -1)
+coord.y <- c(0, dnorm(seq(-4, -1, by = 0.1)), 0)
+polygon(coord.x, coord.y, col = 2)
+```
+
+### 4. Cumulative Distribution Function (CDF)
++ `pnorm()`: to compute the CDF of the normal distribution variable, or to compute the probability of any interval.
++ e.g. the probability that X is less than -1 is
+```{r}
+pnorm(-1) # equals to pnorm(-1, 0[mean], 1[sd])
+```
+
+### 5. Quantiles
++ `qnorm()`: to compute the quantiles of the standard normal distribution.
++ e.g. 0.95-quantile for a standard normal
+```{r}
+qnorm(0.95) # equal to qnorm(0.95, 0[mean], 1[sd])
+```
+
+> + Summary: PDF, CDF, and quantiles in R
+>
+> + `dnorm()`: to compute the PDF of a normal random variable
+> + `pnorm()`: to compute its CDF
+> + `qnorm()`: to compute is quantile.
+> + `rnorm()`: to generate (siulate) a random sample from the normal distribution
+
+## Activity3
+<Q1. Binomial distribution>
+
+Suppose that 70% of adults with allergies report symptomatic relief with a new medication called Nosneez. The distribution of number of adults in a sample of size n who report symptomatic relief after taking the medication is a binomial distribution. A "success" or the outcome of interest is symptomatic relief after taking the medication with the probability of success being π=0.70. Suppose we take a sample of n adults with allergies and treat them.
+
++ Q1.2 What is the probability that 175 adults out of 250 suﬀering from allergies that were treated with Nosneez will experience symptom relief?
+```{r}
+dbinom(175, 250, 0.7) %>% round(3)
+```
+
++ Q1.3 What is the probability that *at least* 175 adults out of 250 suﬀering from allergies that were treated with Nosneez will experience symptom relief?
+```{r}
+(1 - pbinom(174, 250, 0.7)) %>% round(3)
+# or
+1 - sum(dbinom(0:174, 250, 0.7)) %>% round(3)
+```
+
++ Q1.4 What is the probability that *more than 180 but less than or equal to 200 adults* out of 250 suﬀering from allergies that were treated w ith Nosneez will experience symptom relief?
+```{r}
+sum(dbinom(181:200, 250, 0.7)) %>% round(3)
+```
+
++ Q1.9 Plot the *PMF* for the number of patients with allergies out of 250 that experience relief from symptoms with Nosneez.
+```{r}
+p <- dbinom(0:250, 250, 0.7)
+pmf <- as.table(p)
+names(pmf) <- 0:250
+plot(pmf, col = 2, lwd = 2,
+     xlab = "Number reporting relief from symptoms",
+     ylab = 'PMF',
+     main = 'PMF of Number of Patients Experiencing Relief from Symptoms')
+```
+
++ Q1.10 Plot the *CDF* for the number of patients with allergies out of 250 that experience relief from symptoms with Nosneez.
+```{r}
+cum <- pbinom(0:250, size = 250, prob = 0.7)
+plot(0:250, cum, col = 2, lwd = 4, typ = 'l',
+     xlab = 'Number reporting relief from symptoms',
+     main = 'CDF of Number of Patients Experiencing Relief from Symptoms')
+```
+
+<Q2. Normal Distribution>
+The percent body fat in adults can be described with a normal distribution. The mean of the normal distribution is 19 and the standard deviation is 8 (and so the variance is 64).
+
+Functions that will be useful in answering the questions below are: 
+- dnorm() 
+- pnorm() 
+- rnorm() 
+- qnorm() 
+
++ Q2.2 What is the probability that a randomly selected adult would have a percent body fat less than 18?
+```{r}
+pnorm(18, 19, 8)
+```
+
++ Q2.3 What is the probability that a randomly selected adult would have a percent body fat between 21 and 26?
+```{r}
+pnorm(26, 19, 8) - pnorm(21, 19, 8)
+```
+
++ Q2.4 What is the probability that a randomly selected adult would have a percent body fat greater than or equal to 21 and less than or equal to 26?
+
+> A: same with the Q2.3
+
++ Q2.5 What is the mean body fat for a set of 5000 random observations from a normal distribution with mean 19 and standard deviation of 8?
+```{r}
+rnorm(5000, 19, 8) %>% mean #19
+```
+
++ Q2.6 What is the variance body fat for a set of 5000 random observations from a normal distribution with mean 19 and standard deviation of 8?
+```{r}
+rnorm(5000, 19, 8) %>% var #8^2 = 64
+```
+
++ Q2.9 Plot the PDF for the percent body fat in adults (with mean 19 and standard deviation of 8).
+```{r}
+x <- seq(0, 37, by=0.1) 
+p <- dnorm(x, mean = 19, sd = 8) 
+plot(x, p, typ="l",col=2, lwd=4, xlab="percent body fat", ylab="PDF", main="PDF of Percent Body Fat")
+```
+
++ Q2.10 Plot the CDF for the percent body fat in adults (with mean 19 and standard deviation of 8)
+```{r}
+x <- seq(0, 37, by=0.1) 
+cum <- pnorm(x, mean = 19, sd = 8) 
+plot(x, cum, col=2, lwd=4, typ = "l", xlab="percent body fat", ylab="CDF", main="CDF of Percent Body Fat")
+```
+
+***
+
+## Lecture4: Probability, Binomial, Normal
+
+    + Binomial Estimators
+    + Population - Sample - Sampling distribution of sample mean/var/SD
+
+### 1. Binomial: Y~B(n,p)
+$$E(Y)=n\pi\\Var(Y)=n\pi(1-\pi)\\SD(Y)=\sqrt{n\pi(1-\pi)}$$
+$$E(p)=E(Y/n)=E(Y)/n=n\pi/n=\pi\\Var(p)=Var(Y/n)=Var(Y)/n^2=\frac{n\pi(1-\pi)}{n^2}=\frac{\pi(1-\pi)}{n}\\SD(p)=\sqrt\frac{\pi(1-\pi)}{n}$$
+
++ Note that:
+$$SD(Y)=\sqrt{n\pi(1-\pi)}\\SD(p)=\sqrt\frac{\pi(1-\pi)}{n}$$
+
++ Suppose the sampling distribution for p follows Y~B(64, 0.5). If a random guess, what is the chance of getting sample proportion of 0.859 or greater?
+    + PMF is:
+```{r}
+prop <- 0.859
+n <- 64
+prob <- 0.5
+(Y <- n * prop) %>% round # 55
+# Pr(p>=0.859) = Pr(Y>=55) = 1-Pr(Y<55) = 1-Pr(Y<=54)
+1 - pbinom(Y, n, prob)
+```
+
+> A: The probability of getting a sample proportion of `r prop` or greater is `r 1 - pbinom(Y, n, prob)`.
+
+## Activity4
+<Q1. Binomial distribution>
+The probability of having blood type A is 0.36 for individuals in the United States. Imagine that we will sample 120 individuals at random and determine their blood type. Let Y be the number of people out of 120 individuals who have blood type A.
+
++ Q1.2 Plot the PMF (probability distribution) of Y
+```{r}
+x <- 0:120
+y <- dbinom(0:120, 120, 0.36)
+plot(x, y, type = 'h', main = 'PDF of Y', xlab = 'Number of Individuals with Blood Type A', ylab = 'probability')
+```
+
+<Question 2: Estimate for the proportion individuals with type A blood>
+Suppose you take a random sample of 120 individuals from the U.S. population.
+
++ Q2.1 What is the estimate for the population proportion of individuals in the U.S. with blood type A based on the sample?
+
+> The estimate would be the sample proportion, p = Y / 120, where y is the number of individuals in the sample with blood type A.
+
+Simulate taking a random sample of size 120 from the US population and recording whether they have blood type A.
+
++ Q2.2 Based on your sample, what is the estimate of the proportion of individuals in the U.S. who have blood type A?
+```{r}
+# getting proportion from sample
+(prop <- (rbinom(1, 120, 0.36) / 120) %>% round(3))
+```
+
++ Q2.3 What is the probability that your estimate differs from the true value by more than 0.05?
+```{r}
+Y1 <- (120 * (prop - 0.05)) %>% round
+Y2 <- (120 * (prop + 0.05)) %>% round
+Y1
+Y2
+
+# Y1보다 작을 확률 + Y2보다 클 확률이 = more than 0.05일 확률
+p1 <- pbinom(37, 120, 0.36)
+p2 <- 1 - pbinom(49, 120, 0.36)
+(p1 + p2) %>% round(3)
+```
+
++ Q2.456 What is the mean/variance/SD of the sampling distibution for p, the sample proportion?
+    + The mean of the sampling distribution of a sample mean is E(p) = $\pi$ = 0.36
+    + The variance of the sampling distribution of a sample proportion is Var(p) = 0.36(1-0.36)/120=0.00192
+    + The SD of the sampling distribution of a sample proportion is SD(p) = 0.044.
+    
+$$E(p)=E(Y/n)=E(Y)/n=n\pi/n=\pi\\Var(p)=Var(Y/n)=Var(Y)/n^2=\frac{n\pi(1-\pi)}{n^2}=\frac{\pi(1-\pi)}{n}\\SD(p)=\sqrt\frac{\pi(1-\pi)}{n}$$
+
+<Question3: Impact of sample size on the sampling distribution of a sample proportion>
+Now we will explore the impact of the sample size on the sampling distribution for sample proportion. We are still taking random samples from the U.S. population and observing the proportion of individuals with blood type A. The sample sizes we will explore are n = 50, n = 100, n = 250, and n = 1000. For this part, we will use simulated sampling distributions of the sample proportions, p. In particular, we will perform the experiment of drawing the speciﬁc sample sizes 5000 times each. Type the following to get the values in our estimated sample distributions.
+```{r}
+sampProp50 <- rbinom(5000, 50, 0.36) / 50 
+sampProp100 <- rbinom(5000, 100, 0.36) / 100
+sampProp250 <- rbinom(5000, 250, 0.36) / 250
+sampProp1000 <- rbinom(5000, 1000, 0.36) / 1000
+
+# Histograms as the sample size increases
+par(mfrow = c(2,2)) 
+hist(sampProp50, freq=FALSE, xlim = c(0.2, 0.6), xlab="Sample Proportion", ylab="Probability", main = "Sample proportion (n=50)")
+hist(sampProp100, freq=FALSE, xlim = c(0.2, 0.6), xlab="Sample Proportion", ylab="Probability", main = "Sample proportion (n=100)")
+hist(sampProp250, freq=FALSE, xlim = c(0.2, 0.6), xlab="Sample Proportion", ylab="Probability", main = "Sample proportion (n=250)") 
+hist(sampProp1000, freq=FALSE, xlim = c(0.2, 0.6), xlab="Sample Proportion", ylab="Probability", main = "Sample proportion (n=1000)")
+
+# Density plots as the sample size increases
+par(mfrow = c(1,1)) 
+plot(density(sampProp50), ylim = c(0, 26), lwd = 2, xlab="Sample Proportion", ylab="Probability", main = "Density plots (n=50, 100, 250, 1000)")          
+lines(density(sampProp100),col = "red", lwd = 2)
+lines(density(sampProp250), col = "blue", lwd = 2)
+lines(density(sampProp1000), col = "green", lwd = 2)
+```
+
+> As the sample size increases, the sampling distribution for the sample proportion appears to become narrower. In other words, the sampling distribution for the sample proportion has less variability as the sample size increases.
+
+```{r}
+lapply(list(sampProp50,
+            sampProp100,
+            sampProp250,
+            sampProp1000), var)
+```
+
+> As the sample size increases, the variance of the sampling distribution becomes smaller. Comparing the variance of sampProp50 to sampProp100, it appears as though the variance for sampProp100 is approximately half that of sampProp100.
+
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxy3v8bc63j313o0iwdmf.jpg)
+<br>
+
+***
+
+## Lecture5: Estimate of a Population proportion
+    
+    * Sample proportion
+    * MLE in Binomial distribution
+    * MSE
+    * Consistency
+    * Binomial's Normal Approximation
+
+### 1. Maximum likelihood estimation (MLD)
++ *Estimate of parameter*: the value that maximizes the likelihood function, typically maximize *log(likelihood)*
++ Maximum of likelihood function = Maximum of log(likelihood function)
+
+### 2. Properties of estimators
++ Bias: 
+$$Bias = E[\hat{\theta}]-\theta$$
++ Unbiased estimator:
+$$E[\hat\theta]=\theta$$
++ Biased vs. Unbiased estimators
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fxy60efg0zj30w60p81kx.jpg)
+
+### 3. Mean Sqaure Error (MSE): bias + variance
++ the smaller, the better.
+$$MSE[\hat\theta]=E[(\hat\theta-\theta)^2]=Var(\hat\theta)+Bias(\hat\theta)^2$$
+
+### 4. Consistency
++ As estimator $\hat\theta$ is *consistent* if, as n goest to infinity, it converges in probability to the true parameter value $\theta$.
++ There are two ways to show this:
+$$1. \lim_{n\rightarrow \infty}Pr(|\hat\theta_n-\theta|>\varepsilon)=0\quad for\space any\space\varepsilon>0 \\2. \lim_{n\rightarrow \infty}MSE(\hat\theta_n)=0$$
+
+### 5. Confidence interval (CI)
++ point estimate fore $\theta$: $\hat\theta$
++ however, point estimate will differ from sample to sample. Thus, we use confidence interval.
++ There are *three ways to calculate CI*:
+    + <1> manually
+    + <2> `binom.test()`
+    + <3> using the fact: binomial approximated by a normal distribution
+
+<2> Using `binom.test()`
+The data in a national Nutrition Study includes information on nutrition and health habits of a sample of 315 people. One of the variables is Smoke, indicating whether a person smokes or not (yes or no). Do the data provide evidence that the proportion of smokers is different from 0.20 (or 20%)?
+```{r eval = F}
+binom.test(x = sum(Smoke=='yes'),
+           n = length(Smoke), 
+           p = 0.2,
+           conf.level = 0.90)
+# The data do not provide evidence that the proportion of smokers is different from 20%.
+# The point estimate for the proportion of smokers is 0.17.
+# The corresponding 90% CI is 0.119 to 0.233. Since the 90% confidence interval contains the value 0.20, there is no evidence that the proportion of smoker differs from 0.20.
+```
+
+<3> Normal approximation to a binomial
+$$If\space n,\space n\pi,\space and\space n\pi(1-\pi)\space are\space\\large\space enough(i.e.\space n\pi(1-\pi)\ge10))\space then\\B(n,\pi)\sim N \left(n\pi,\sqrt{n\pi(1-\pi)}\right)$$
+
+## Activity5
+According to an article in the American Heart Association's publication Circulation, *24%* of patients who had been hospitalized for an acute myocardial infarction did not ﬁll their cardiac medication by the seventh day of being discharged.
+
+Suppose that the population proportion of patients who do not ﬁll their cardiac medication within seven days of being discharged is, π = 0.24. Suppose we did not know this proportion but we want to estimate it using the sample proportion, P, computed as the number who did not ﬁll their cardiac medication within seven days out of a random sample of 40 cardiac patients who had been hospitalized for acute myocardial infarction. Hence, each sample will have size n = 405 taken from a population with a population proportion of "success" being π = 0.24.
+
+<Question2: Interpretation of a CI>
++ Q2.2 Calculation of proprtion of many generated conﬁdence intervals that contain the population proportion
+    + We want to get 1000 random samples of size n = 405 each from the population.
+    + *calculate the confidence interval using `binom.test()` and then we will determine the proportion of intervals that contain the true value π = 0.24*.
+```{r}
+# What proportion of the 1000 simulated 95% conﬁdence intervals contained 0.24?
+size <- 1000
+n <- 405
+pi <- 0.24
+alpha <- 0.10 # change the alpha only
+
+counter <- 0 
+for(i in seq_len(size)) { 
+    y <- rbinom(1, n, pi) 
+    lower <- binom.test(y, n, conf.level = 1-alpha)$conf.int[1] 
+    upper <- binom.test(y, n, conf.level = 1-alpha)$conf.int[2] 
+    if(pi > lower & pi < upper) { 
+        counter <- counter + 1 
+    } 
+}
+
+answer <- counter/size
+
+# Conclusion: The result is what I would have expected since the conﬁdence level is 95%, which means that 95% of the interval should contain 0.24. The proportion of intervals that contained the true proportion of 0.24 was
+answer
+```
+
+```{r}
+# Suppose we had a sample of size 621 instead of 405. What proportion of 95% conﬁdence intervals from 1000 samples contained 0.24? Is this what you expected?
+size <- 1000
+n <- 621 # change n only
+pi <- 0.24
+alpha <- 0.05
+
+counter <- 0 
+for(i in seq_len(size)) { 
+    y <- rbinom(1, n, pi) 
+    lower <- binom.test(y, n, conf.level = 1-alpha)$conf.int[1] 
+    upper <- binom.test(y, n, conf.level = 1-alpha)$conf.int[2] 
+    if(pi > lower & pi < upper) { 
+        counter <- counter + 1 
+    } 
+}
+
+(answer <- counter/size)
+```
+
+```{r}
+# Suppose we had a sample of size 621 but the population proportoin was 0.36 insteand of 0.24. What proportion of 95% conﬁdence intervals from 1000 samples contained 0.36?
+size <- 1000
+n <- 621 
+pi <- 0.36 # change pi only
+alpha <- 0.05
+
+counter <- 0 
+for(i in seq_len(size)) { 
+    y <- rbinom(1, n, pi) 
+    lower <- binom.test(y, n, conf.level = 1-alpha)$conf.int[1] 
+    upper <- binom.test(y, n, conf.level = 1-alpha)$conf.int[2] 
+    if(pi > lower & pi < upper) { 
+        counter <- counter + 1 
+    } 
+}
+
+(answer <- counter/size)
+```
+
+> + CIs vary from sample to sample but the population proportion does not vary from sample to sample, it is always equal to 0.24.
+
+<Q3. Characteristics of CIs>
+
+    * impact of different sample size
+    * impact of differece confidence levels
+    * ipact of different underlying pop proportions
+
+> + As the *sample size* increases, the width of a 95% confidence interval becomes narrower. This means as the sample size increases, the estimate becomes more precise.
+> + As the *confidence level* increases, the width of the conﬁdence interval becomes wider. This is reasonable because in order to become more certain that the interval contains the true population proportion, we need more values in the interval.
+> + As the *population proportion* becomes closer to 0.5, the width of a 95% confidence interval becomes wider. The most variability in a binomial distribution (and its cousin the sampling distribution for the sample proportion), occurs when π = 0.5.
+
+***
+
+## Lecture6: Hypothesis Test for a Population Proportion
+
+    * Sampling distribution of a sample proportion
+    * Hypothesis testing
+
+### 1. Example
+The US Census indicates that 35% of US residents are less than 25 years old. We took the random sample of residents of Manhattan n = 62 obtained 20 individuals less than 25 years old. 
+
+*Question: is there evidence that Manhattan has a different age distribution?*
+
+### 2. Method1: CI
+```{r}
+test <- binom.test(x = 20, n = 62, conf.level = 0.95)
+test$estimate
+test$conf.int
+# It does not appear as though there is evidence that the age distribution in Manhattan differs from the census. The 95% CI 0.209 to 0.453 contains 0.35.
+```
+
+### 3. Method2: Hypo Testing
+```{r}
+# H_0: The proportion of individuals less than 25 years old is 0.35 ($\pi$=0.35)
+# H_a: The proportion of individuals less than 25 years old is not equal to 0.35 ($\pi\ne$0.35)
+test <- binom.test(20, 62, 0.35, conf.level = 0.95)
+test
+
+# Conclustion: There is no evidence that the age distribution in Manhattan diﬀers from the census. The proportion of residents under 25 years old, 0.323, does not appear to diﬀer from 0.35 (p-value = 0.692).
+```
+
+We took the random sample of residents of Manhattan n = 92 obtained 20 individuals less than 25 years old. 
+
+```{r}
+# H_0: The proportion of individuals less than 25 years old is 0.35 ($\pi$=0.35)
+# H_a: The proportion of individuals less than 25 years old is not equal to 0.35 ($\pi\ne$0.35)
+test <- binom.test(20, 92, 0.35, conf.level = 0.95)
+test
+
+# There is evidence that the age distribution in Manhattan diﬀers from the census. The proportion of residents under 25 years old, 0.217, does appear to differ from 0.35 (p-value = 0.008) at a 0.05 two-sided signiﬁcance level. It appears as though the the proportion of residents under 25 is less than 0.35 (95% CI: 0.138 to 0.316).
+```
+
+### 4. p-Value definition
++ The probability of getting our result, or one more extreme, ASSUMING the null hypothesis is true.
+
+## Activity6
+In the Lister example, the proportion of patients who died from infection after amputation at his hospital was 0.40. The question is whether sterilization worked. It was decided that surgeons would be interested in any sterilization technique that reduces the proportion of patients who die from infection after amputation by 0.20 or more. Rather than testing one technique, let's assume that Lister tested 5 different techniques.
+
+You are asked to simulate the sampling distributions of the sample proportion, P, under the null hypothesis that the true proportion is 0.40 and the sample size is 50. Your simulation will be of 5000 random samples of size 50 from a population with a true proportion of 0.40. For each random sample, you will compute the observed value of p and save in a vector.
+
+<Question4: calculating simulated p-values>
++ Q4.1 Generate the sampling distribution under the null hypothesis.
+```{r}
+# sampling dsitributon of a sample proportion
+sampDist <- rbinom(n = 5000, 
+                   size = 50, 
+                   prob = 0.4) / 50
+```
+
+We have data from each of the ﬁve diﬀerent techniques: A, B, C, D, E, and F. Sample sizes of 50 were taken and a point estimate was obtained for the proportion of patients who died from infection after amputation.
+```{r}
+# Suppose that Technique A is used on a sample of 50 patients and the point estimate for the proportion who died from infection after amputation is 0.38. What is the chance of this assuming the null hypothesis is true?
+prob <- 0.40
+(sum(sampDist <= prob-0.02) + sum(sampDist >= prob+0.02)) / 5000 # A: 0.38
+(sum(sampDist <= prob-0.06) + sum(sampDist >= prob+0.06)) / 5000 # B: 0.34
+(sum(sampDist <= prob-0.08) + sum(sampDist >= prob+0.08)) / 5000 # C: 0.32
+(sum(sampDist <= prob-0.2) + sum(sampDist >= prob+0.2)) / 5000 # D: 0.20
+(sum(sampDist <= prob-0.08) + sum(sampDist >= prob+0.08)) / 5000 # E: 0.48
+# As the observed value moves farther away from the null hypothesis value, the p-value becomes smaller. This does make sense because in the sampling distribution of P taken from a population with π = 0.40, the chance of getting a value of p or one more extreme becomes less likely the further p is from 0.40.
+# It looks like technique D may signiﬁcantly reduce the proportion of patients who die from infection after amputation because the chance of observing a p of 0.20 or one more extreme, if the true proportion were 0.40, is highly unlikely.
+```
+
+```{r}
+dat_sterile <- read.csv("SterileData.csv")
+prob <- 0.4
+# A
+x <- sum(dat_sterile$techniqueA == 'died')
+n <- 100
+(test <- binom.test(x, n, prob, conf.level = 0.95))
+# B
+x <- sum(dat_sterile$techniqueB == 'died')
+n <- 100
+(test <- binom.test(x, n, prob, conf.level = 0.95))
+# C
+x <- sum(dat_sterile$techniqueC == 'died')
+n <- 100
+(test <- binom.test(x, n, prob, conf.level = 0.95))
+# D
+x <- sum(dat_sterile$techniqueD == 'died')
+n <- 100
+(test <- binom.test(x, n, prob, conf.level = 0.95))
+# E
+x <- sum(dat_sterile$techniqueE == 'died')
+n <- 100
+(test <- binom.test(x, n, prob, conf.level = 0.95))
+# It appears as though technique E signiﬁcantly reduces the proportion of patients who died from infection after amputation. This is because the chance of having observed a sample proportion of p = 0.14, assuming the population proportion is π = 0.40, is very small (p-value < 0.001). The chance of observing sample proportion values (p) for the other techniques are rather large (all p-values greater than 0.10) under the null hypothesis that π = 0.40, which indicates there is no evidence against the assumption that the population proportion is 0.40.
+```
+
+***
+
+## Lecture7: Bootstrap
+
+    * "manual" exact: use `pbinom()`
+    * "manual" normal approximation: use `pnorm()` 
+    * direct exact computation: `binom.test()` 
+    * direct normal approximate computation: `prop.test()` 
+    * "manual" bootstrapping: use `quantiles()` 
+    * direct bootstrapping: use `boot()` and `boot.ci()`
+
+```{r}
+noShow <- read.csv('KaggleV2-May-2016.csv', header = T)
+n <- length(noShow$No.show)
+propEstimate <- sum(noShow$No.show == "Yes") / n
+
+# "manual" exact: use `pbinom()`
+lb <- qbinom(0.05, length(noShow$No.show), propEstimate) / n
+ub <- qbinom(0.95, length(noShow$No.show), propEstimate) / n
+c(lb, ub) %>% round(4) #
+
+# "manual" normal approximation: use `pnorm()`
+lb <- qnorm(0.05, propEstimate, sqrt(propEstimate * (1 - propEstimate)/n))
+ub <- qnorm(0.95, propEstimate, sqrt(propEstimate * (1 - propEstimate) /n))
+c(lb, ub) %>% round(4) #
+
+# direct exact computation: `binom.test()` 
+numYes <- sum(noShow$No.show == "Yes") 
+binom.test(numYes, n, conf.level = 0.90)$conf.int %>% round(4) #
+
+# direct normal approximate computation: `prop.test()` 
+prop.test(numYes, n, conf.level = 0.90)$conf.int %>% round(4) #
+
+# manual bootstrapping
+B <- 2000 
+sampleProp <- replicate(B, { 
+    y <- sample(noShow$No.show, size = n, replace=T)
+    sum(y == "Yes") / n 
+    })
+quantile(sampleProp, c(0.05, 0.95)) %>% round(4) #
+
+# direct bootstrapping: use `boot()` and `boot.ci()`
+library(boot) 
+bootProp <- function(x, idx) {
+    return(sum(x[idx] == "Yes") / length(noShow$No.show))
+} 
+bootPropObj <- boot(noShow$No.show, bootProp, 200)
+boot.ci(bootPropObj, type = 'perc')$percent[c(4,5)] %>% round(4)
+
+# There is evidence that the hospital has a worse no show rate than their competitor. The estimate of the no show rate for the hospital is 0.2019 with an exact binomial 90% confidence interval of 0.1999 to 0.2039. Since 0.15 is not in the 90% interval, and because the 90% CI lies above 0.15, there is evidence that the hospital’s rate is worse than their competitor.
+```
+
+## Activity7
+Nothing useful.
+
+***
+
+## Lecture8: Type I, II error / Power / Sample size
+### 1. Type I and II error
++ When testing hypotheses, there are two possible errors that we can make:
+    + *Type I error*: Rejecting the null when the null hypothesis is true.
+    + *Type II error*: Not rejecting the null when the null is false.
+    
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxym24bu6lj30ys0duju1.jpg)
+![](https://i.stack.imgur.com/x1GQ1.png)
+
+### 2. Power
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxym2olcmoj30vc0g60vs.jpg)
+
+### 3. Example
+A person makes a doctor appointment, receives all the instructions and then fails to show up for the appointment. They are called no-shows. We are working with a medical institution who wants to understand their no-show rates. In addition, they gained insider information know that the medical institution across town has a *no-show rate of 0.18 (or 18%)*. The investigator has a sample of *size 140* randomly selected appointments and determines if the patient is a no-show or not.
+
++ The estimate of the no-show rate is 0.221.
++ The investigator wants to know if the no-show rate is greater than for the rival institution.
+
+$$H_0: \pi=\pi_0=0.18\\H_a=\pi=\pi_a>0.18$$
++ Under $H_0$, P has a rescaled B(140, $\pi_0$) distribution.
++ Under $H_a$, P has a rescaled B(140, $\pi_a$) distribution.
++ Since this is a one-sided test, the rejection region will be of the form (c, $+\infty$) whee c is the *critical value*.
+
+```{r}
+#critical value (one-sided, 95%)
+(q <- qbinom(0.95, 140, 0.18)) #quantile=33
+(33/140) %>% round(3) #percentile=0.236
+
+#critical value (two-sided, 95%)
+qbinom(c(0.025, 0.975), 140, 0.18)
+```
+
+> + Rejection region on the number of successes scale is Y > 33
+> + Rejection region on sample proportion scale is P > 0.236 (=33/140)
+
+```{r}
+# power
+# =Pr(Reject H_0 | H_a) = Pr(Y > q | $\pi_a$ = 0.25)
+# Suppose that the researcher believes $\pi_a$=0.25. This is a Y = 140 * $\pi_a$ = 35
+(q <- qbinom(0.95, 140, 0.18)) #quantile=33
+(1 - pbinom(q, 140, 0.25)) %>% round(3)
+```
+
+> Chance we will get a statistically significant result (meaning a p-value < $\alpha$ = 0.05) if the alternative hypothesis is true (e.g. $\pi_a$=0.25) is 0.609.
+
+### 4. Power and sample size
++ What is the smallest sample size n that we need to achieve a given power? -- Use `propTestN()`
++ In biostatistics, *two important criteria*:
+    + Collect a sample size large enough to be able to prove an eﬀect if there is one.
+    + Collect a sample size small enough to avoid potentially harming many people.
++ In order to calculate the power, we need *alpha*, *pi_a*, and *1-beta*
+
+
+    * a significance level $\alpha$
+    * the value $\pi_a$ that we want to be able to detect
+    * the power of the test = 1-$\beta$
+    
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fxymqjeq5fj30wo0esjte.jpg)
+
+```{r}
+library(EnvStats)
+pi_a <- 0.22
+pi_zero <- 0.18
+alpha <- 0.01
+power <- 0.85
+
+sampleSize <- propTestN(pi_a, pi_zero, alpha = alpha, power = power, sample.type = "one.sample", alternative = "greater", approx = FALSE) 
+# approx = FALSE, using exact binomial.
+# approx = TRUE, using normal approximation.
+sampleSize
+```
+
++ To compute *sample size* for a single population proportion, use `propTestN(power, alpha, difference to detect)`
++ To compute *power* for a sample of a single population proportion, use `propTestPower(sample size, alpha, difference to detect)`
++ To compute *minimal detectable difference* for a single population proportion use `propTestMdd(sample size, alpha, power)`.
+
+## Activity8
+Obesity is associated with serious health risks. Monitoring obesity prevalence is relevant for public health programs that focus on reducing or preventing obesity. Between 2003–2004 and 2013–2014, there were no signiﬁcant changes in childhood obesity prevalence, but adults showed an increasing trend. The prevalence of obesity among U.S, adults in 2015–2016 was *39.8% (crude)*. We will use this as the basis of what we are going to explore today. Make sure you attach the tools in the package `EnvStats` using the `library()` command.
+
+<Question1: Computing a sample size for different power>
+```{r}
+# Mdd = 15% (absolute) / two-sided alpha = 0.05
+detectP <- 0.398 + 0.15
+    # 1) power 80%
+propTestN(detectP, 0.398, alpha = 0.05, power = 0.80, approx = F)$n
+    # 2) power 85%
+propTestN(detectP, prop, alpha = 0.05, power = 0.85, approx = F)$n
+# As the power increases, holding all other variables the same, the sample size increases.
+```
+
+<Question2: Computing a sample size for different detectable differences>
+```{r}
+# power = 0.90 / two-sided alpha = 0.05
+    # 1) Mdd = 20%
+detectP <- 0.398 + 0.20
+propTestN(detectP, 0.398, alpha = 0.05, power = 0.90, approx = F)$n
+    # 2) Mdd = 15%
+detectP <- 0.398 + 0.15
+propTestN(detectP, 0.398, alpha = 0.05, power = 0.90, approx = F)$n
+# As the detectable difference decreases (the alternative hypothesis value gets closer to the null hypothesis value), holding all other variables the same, the sample size increases.
+# null hypo와 alternative hypo의 center가 서로 가까워질수록 (겹쳐지는 영역이 많아지니 error가 더 많아질 확률이 높아지므로) 필요 샘플 수가 증가하게 됨
+```
+
+<Question3: Computing a sample size for different alpha values>
+```{r}
+# power = 90%   Minimum detectable differences = 10%
+    # 1) two-sided alpha = 0.20
+detectP <- 0.398 + 0.10 
+propTestN(detectP, 0.398, alpha = 0.2, power = 0.90, approx = F)$n
+    # 2) two-sided alpha = 0.15
+detectP <- 0.398 + 0.10 
+propTestN(detectP, 0.398, alpha = 0.15, power = 0.90, approx = F)$n
+# As the α decreases, holding all other variables the same, the sample size increases.
+# α 는 유의수준(level of significance)
+# 이게 감소하면 검정을 더 빡세게 하겠다는 의미 a=0.05보다 a=0.01이 더 높은 유의수준 검정임을 기억! 따라서 그만큼 필요 샘플 수도 증가하게 됨
+```
+
+| Components                      | Sample size           | 
+|---------------------------------|-----------------------| 
+| power increases                 | sample size increases | 
+| detectable difference decreases | sample size increases | 
+| alpha decreases                 | sample size increases | 
+
+***
+
+## Lecture9: Bootstrap Hypothesis Testing / Normal approximation
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxynj9vdr1j31220s2n61.jpg)
+For adults over 18, normal total bilirubin can be up to *1.2 milligrams per deciliter (mg/dl)* of blood.
+
+```{r}
+library(survival)
+data(pbc)
+pbcCT <- pbc %>% filter(!(is.na(trt)))
+# Not normally distributed, right-skewed
+hist(pbcCT$bili, col="chocolate", freq=FALSE, ylim = c(0, .4), xlab="serum bilirubin (mg/dl)", ylab = "proportion", main="Histogram/Density of Bilirubin Values") 
+lines(density(pbcCT$bili, bw=0.6), lwd=4, col="dodgerblue")
+```
+
+### 1. Estimate of the mean
+```{r}
+B <- 10000 
+n <- length(pbcCT$bili)
+sampleProp <- replicate(B, { 
+    y <- sample(pbcCT$bili, size = n, replace=T)
+    mean(y)
+    })
+
+hist(sampleProp, probability = TRUE, breaks=20, col="chocolate", xlab="sample mean", ylab = "probability", main = "Bootstrap sampling distribution of sample mean") 
+lines(density(sampleProp), col="dodgerblue", lwd=3) 
+legend("topright", "density", col="dodgerblue", lwd=3)
+
+# Since the bootstrap sampling distribution's mean is not a good estimate of the true mean. So we use the sample mean:
+(ptEst <- mean(pbcCT$bili) %>% round(3))
+
+# 99% CI
+quantile(sampleProp, c(0.005, 0.995)) %>% round(4)
+
+# Using boot and boot.ci
+library(boot) 
+bootProp <- function(y, idx) {
+    return(c(mean(y[idx]), var(y[idx])))
+} 
+bootPropObj <- boot(pbcCT$bili, bootProp, B)
+bootPropObj$t0[1] %>% round(3) # point estimate
+boot.ci(bootPropObj, type = 'perc')$percent[c(4,5)] %>% round(3) # CI
+
+# Conclusion: It does appear as though the PBC patients have abnormal bilirubin levels. For patients with PBC, the point estimate for the mean bilirubin value is 3.256 and the 99% CI for the mean bilirubin values is 2.641 to 3.969. Since the upper bound of normal values, 1.2 mg/dl is not in the 99% CI, it appears as though PBC patients have elevated bilirubin values on average.
+```
+
+### 2. Hypothesis testing
+Suppose we want to know whether there is evidence that the mean bilirubin values for PBC patients is abnormal on average using a α = 0.05.
+$$H_0: \mu_0=1.2\\H_a: \mu_0\ne1.2$$
+
+```{r}
+# Using boot and boot.ci
+library(boot) 
+bootProp <- function(y, idx) {
+    return(c(mean(y[idx]), var(y[idx])))
+} 
+bootPropObj <- boot(pbcCT$bili, bootProp, B)
+bootPropObj$t0[1] %>% round(3) # point estimate
+boot.ci(bootPropObj, type = 'perc')$percent[c(4,5)] %>% round(3) # CI
+
+# Conclusion: The point estimate is 3.256. The corresponding 95% confidence intervals is from boot.ci and is 2.775 to 3.79. Since the interval does not contain 1.2, we know that the p-value < 0.05. Hence we have evidence against the null hypothesis that the mean bilirubin level is 1.2 at the α = 0.05 level. It appears as though the mean bilirubin level for the PBC patients is higher than normal.
+```
+
+### 3. Impact of sample size
++ *the spread of the sampling distribution is smaller as the sample size increase*.
++ Bootstrap sampling distribution에서 sample 전체를 다 사용한 경우와 10개만 뽑아서 bootstrapping을 한 경우를 비교해보면 sample size가 클수록 standard deviation of the bootstrap distribution(i.e., bootstarp standard error)이 더 작아진다
+
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fxyonm7ok0j31000qo42w.jpg)
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fxyoo11opfj30ma0n4wgt.jpg)
+
+## Activity9
+
+Nothing useful
+
+*** 
+
+## Lecture10: Asymptotics and Central Limit Theorem(CLT)
+
+    * Asymptotics
+    * Central Limit Theorem (CLT)
+    * MLE in normal distribution
+
+### 1. Normal distribution
+$$Y\sim N(\mu, sd = \sigma)\\\bar{Y}\sim N(\mu, sd = \sigma / \sqrt{n})$$
++ Sampling distribution of sample mean of a normal
++ *Standard error(SE)*: the standard deviation of the sampling distribution of a sample mean 
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fxz7hpw8v8j30yc0oy77d.jpg)
+
++ The estimator of the sample mean is an unbiased estiamtor.
++ MLE estimator of variance(or standard deviation) is biased. Howver, if we increase the sample size, it becomes asymptotically unbaised and normally distributed.
+
+### 2. Central Limit Theorem (CLT)
+1) definition
+
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxz7ljo76xj310g07aq5q.jpg)
+
+2) example
+
+Suppose the heights of girls in Canada follows a distribution with *mean 48 inches and variance of 81 inches squared*. Use the CLT approximation to estimate the probability that in a random sample of *75 girls*, the mean height is *more than 51 inches*.
+```{r}
+# Y ~ N(48, 9)
+# Y-bar ~ N(48, 9/sqrt(75))
+(1 - pnorm(51, 48, 9/sqrt(75))) %>% round(3)
+```
+
+3) impact of sample size on sampling distribution
+> + The spread of the sampling distribution decreases(gets narrower) as the sample size increases.
+
+4) hypothesis test
+Suppose someone has a sample of 125 girls and finds that the mean height is 46. Is there evidence that the sample is not from Canada(48). We will use a signiﬁcance level of α = 0.01.
+```{r}
+# H_0: $\mu$=48
+# H_a: $\mu\ne$48
+qnorm(c(0.005, 0.995), 48, 9/sqrt(125))
+
+# Conclusion: Since the 99% CI contains 46, this means the p-value > 0.01 so there is no evidence that this sample did not come from Canada.
+```
+
+### 5) Example: exponential distribution
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxz8sccfs5j30ui0bkgnu.jpg)
+
+```{r}
+samp.means <- numeric(1000) 
+for (i in 1:1000) {
+    x <- rexp(90, 15)
+    samp.means[i] <- mean(x)
+}
+
+hist(samp.means, freq=FALSE, col="lemonchiffon", ylim=c(0,75), xlab="sample means", ylab="density") 
+lines(density(rnorm(10000,1/15, (1/15)/sqrt(125))), col="slateblue",lwd=5)
+
+# mean and std error
+# sample mean = 1/15 = 0.067
+mean(samp.means) %>% round(3)
+# SE (1/15)/sqrt(125) = 0.006
+sd(samp.means) %>% round(3)
+```
+
+## Activity 10
+
+No activity for lecture 10
+
+***
+
+## Lecture11: CI review
+
+    * sample from normal and known sigma
+    * sample from nomral and unknown sigma
+    * ㄴt-test
+    * non-normal population
+
+### 0. CI definition
++ *CI definition*: the probability falling within the quantiles
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxz90ytyphj30gk02i3ym.jpg)
+
+### 1. sample from normal and known sigma
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fxz9cof2cgj30l40f63zn.jpg)
+$$Z=\frac{\hat\mu-mu}{\sigma/\sqrt{n}}\sim N(0,1)$$
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fxzcis9km1j30yg0e2q4i.jpg)
++ where $q_{1-\alpha/2}$ is `qnorm(1-alpha/2)`
+    + 90% CI: qnorm(0.95) = 1.645 
+    + 95% CI: qnorm(0.975) = 1.96 
+    + 99% CI: qnorm(0.995) = 2.576
+
+```{r}
+# average adult BMI in US is 26.5
+# standard deviation of adult BMI in US is 3.3 
+# sample mean from sample of size n = 9 adults: 24.8
+(lb <- 24.8 - (qnorm(0.975) * 3.3/sqrt(9)))
+(ub <- 24.8 + (qnorm(0.975) * 3.3/sqrt(9)))
+# The 95% CI for the average BMI based on this sample is 22.6 to 27.0.
+```
+
+### 2. sample from normal and unknown sigma
++ true SD를 알 때에는 표준정규분포를 따르고 Z라는 test statistic을 사용하지만,
++ true SD를 모를 때에는 Chi-square distribution (df = n-1)를 따르면서 t-statistic이라는 statistic를 사용함 
+    + true SD를 모르기 때문에 추정치 SD를 대신 사용
+
+$$T=\frac{\hat\mu-\mu}{\hat\sigma/\sqrt{n}}$$
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fxzdcenbucj30wo0eudi2.jpg)
++ normal distribution / chi-square distribution = *T-distribution*
+
+### 3. t-test
++ Use `t.test()` to get a CI for $\mu$ *when the sample is from normal but $\sigma$ is unknown*
+
+The mean systolic blood pressure of U.S. adults who are 40-59 years of age is *123 mm Hg* with a *standard deviation of 23 mm Hg*. Suppose we take a random sample of *size 12* from the a population and measure the SBP. We want to know whether our sample indicates that this population is from normal tensive individuals or hypertensive individuals. We will conclude that our sample is from hypertensive individuals if the mean SBP is *greater than 140 mm Hg*.
+
+```{r}
+data <- c(123.3, 149.5, 79.6, 97.9, 133.3, 108.5, 148.4, 125.1, 111.9, 129.1, 99.3, 137.1)
+muhat <- mean(data)
+n <- 12
+# suppose we know SD = 23
+(lb <- muhat - (qnorm(0.95) * 23/sqrt(n)))
+(ub <- muhat + (qnorm(0.95) * 23/sqrt(n)))
+
+# suppose we don't know SD: manual calculation
+(lb <- muhat - (qt(0.95, n - 1) * 23/sqrt(n)))
+(ub <- muhat + (qt(0.95, n - 1) * 23/sqrt(n)))
+
+# suppose we don't know SD: t.test()
+test <- t.test(data, conf.level = 0.90)
+test$conf.int[c(1,2)]
+
+# Since the 90% CI (from t.test) contains 140, there is no evidence that the sample is from a population of individuals who are hypertensive.
+```
+
+## Activity11
+The coverage of a confidence interval is the proportion of conﬁdence intervals that contain the true mean if many confidence intervals were generated from the given population. In this problem, we are sampling from population of healthy humans with *mean temperature 98.2 degrees in Farenheit* and with *KNOWN standard deviation of 0.7 degrees in Farenheit*. The large population of individuals is *10,000 healthy adults*. The data are in the R object called `temperatures.rds`.
+
+```{r}
+temperatures <- readRDS('temperatures.rds')
+```
+
+<Question 1: Determining the coverage of the CI for sigma known and (correct) normal sampling distribution>
+```{r}
+# n=3
+n <- 3
+mu <- 98.2
+sigma <- 0.7
+q <- qnorm(0.975) 
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    lower <- mean(x) - q * sigma/sqrt(n) 
+    upper <- mean(x) + q * sigma/sqrt(n) 
+    if(mu > lower & mu < upper) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# n = 10
+n <- 10
+mu <- 98.2
+sigma <- 0.7
+q <- qnorm(0.975) 
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    lower <- mean(x) - q * sigma/sqrt(n) 
+    upper <- mean(x) + q * sigma/sqrt(n) 
+    if(mu > lower & mu < upper) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+```
+
+<Question 2: Determining the coverage of the CI for sigma unknown and (incorrect) normal sampling distribution>
+```{r}
+# n=3
+n <- 3
+mu <- 98.2
+# sigma is unknown
+q <- qnorm(0.975) 
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    # using sample SD instead.
+    sample.sd <- sd(x)
+    lower <- mean(x) - q * sample.sd/sqrt(n) 
+    upper <- mean(x) + q * sample.sd/sqrt(n) 
+    if(mu > lower & mu < upper) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# n = 10
+n <- 10
+mu <- 98.2
+# sigma is unknown
+q <- qnorm(0.975) 
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    # using sample SD instead.
+    sample.sd <- sd(x)
+    lower <- mean(x) - q * sample.sd/sqrt(n) 
+    upper <- mean(x) + q * sample.sd/sqrt(n) 
+    if(mu > lower & mu < upper) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# How do the coverage probabilities compare between using the known SD and using the estimate?
+# A: On average, the coverage probability for question 1 is close to the expected 0.95 (or 95%). The coverage for the intervals in question 2 are substantially lower than the expected 0.95. This is because we are estimating the standard deviation from the sample but still using a normal sampling distribution. Note that as the samples increases, the coverage gets closer to the correct 0.95.
+```
+
+<Question4: Determining the coverage of the CI for sigma unknown and t sampling distribution>
+In this problem, we are going to use the sample standard deviation rather than the known population standard deviation. In addition, we are correctly going to assume that the sampling distribution of the sample mean is a t-distribution.
+```{r}
+# n=3
+n <- 3
+mu <- 98.2
+# sigma is unknown
+q <- qt(0.975, n - 1) # using t instead of Z
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    # using sample SD instead.
+    sample.sd <- sd(x)
+    lower <- mean(x) - q * sample.sd/sqrt(n) 
+    upper <- mean(x) + q * sample.sd/sqrt(n) 
+    if(mu > lower & mu < upper) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# n = 10
+n <- 10
+mu <- 98.2
+q <- qt(0.975, n - 1)
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    # using sample SD instead.
+    sample.sd <- sd(x)
+    lower <- mean(x) - q * sample.sd/sqrt(n) 
+    upper <- mean(x) + q * sample.sd/sqrt(n) 
+    if(mu > lower & mu < upper) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# How do the coverage probabilities compare between questions?
+# A: When we use the correct sampling distribution (questions 1 and 4), the coverage probability is close to 0.95 as expected. However, when we use the incorrect sampling distribution (question 2), the coverage probability substantially differs than the expected 0.95, it is less. In this case, the 95% CI would contain the population mean considerable less often than 95%.
+```
+
+<Question6: Bilirubin, determining the coverage of the CI as function of sample size>
+In this problem, we are sampling from population of bilirubin values from a population. The true population mean value is 3.28 mg/dL.
+```{r}
+bilirubin <- readRDS('bilirubin.rds')
+hist(bilirubin) # not normal
+```
+
+```{r}
+# n = 10
+n <- 10
+mu <- 3.28
+q <- qt(0.975, n - 1) 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(bilirubin, n, replace = F)
+    sample.sd <- sd(x)
+    lower <- mean(x) - q * sample.sd/sqrt(n)
+    upper <- mean(x) + q * sample.sd/sqrt(n)
+    if(mu > lower & mu < upper) { counter <- counter + 1 }
+}
+counter/reps
+
+# n = 100
+n <- 100
+mu <- 3.28
+q <- qt(0.975, n - 1) 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(bilirubin, n, replace = F)
+    sample.sd <- sd(x)
+    lower <- mean(x) - q * sample.sd/sqrt(n)
+    upper <- mean(x) + q * sample.sd/sqrt(n)
+    if(mu > lower & mu < upper) { counter <- counter + 1 }
+}
+counter/reps
+
+# n = 750
+n <- 750
+mu <- 3.28
+q <- qt(0.975, n - 1) 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(bilirubin, n, replace = F)
+    sample.sd <- sd(x)
+    lower <- mean(x) - q * sample.sd/sqrt(n)
+    upper <- mean(x) + q * sample.sd/sqrt(n)
+    if(mu > lower & mu < upper) { counter <- counter + 1 }
+}
+counter/reps
+
+# Why is the coverage probability so poor for the smaller sample sizes?
+# A: One of the assumptions for the t-distribution is that you are sampling from a normal distribution. Clearly, the population of bilirubin values is quite skewed. This is why the coverage probabilities are not accurate for the lower values. 
+
+# As the sample size gets larger, by the central limit theorem, the sampling distribution of the sample means becomes more normal and thus the sampling distribution of the sample means (with sigma unknown) approaches a t-distribution.
+# This is why as the sample size increases, the coverage probability becomes closer to the expected value of 0.95.
+```
+
+<Question 7: PBC>
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fxzey8e45aj30z00dtdoz.jpg)
+```{r}
+library(survival) 
+data(pbc)
+pbcCT <- pbc %>% filter(!(is.na(trt)))
+hist(pbcCT$age)
+```
+
+```{r}
+# Is there evidence that the mean age differs from 52?
+mean(pbcCT$age) # point estimate
+t.test(pbcCT$age, conf.level = 0.95)$p.value #p-val
+t.test(pbcCT$age, conf.level = 0.95)$conf.int[c(1,2)] # 95% CI
+# Conclusion: Since the inverval does not contain 52, there is evidence that the mean age differs from 52. It appers as though the individuals on the clinical trials are younger than the average age of PBC patients. 
+```
+
+***
+
+## Lecture12: Hypothesis testing / t-test
+### 1. test statistic
+$$T=\frac{\hat\mu-\mu}{\hat\sigma/\sqrt{n}}$$
++ a function of the data: sample mean
++ determined under the null hypothesis
++ defines the sampling distribution
++ assume sampling from a normal distribution and unknown sigma
+
+### 2. p-value
++ the probability that chance alone would produce a test statistic as extreme (or more extreme) as the one observed
++ the probability of observing the value of the test statistic or a test statistic more extreme *assuming the null hypothesis is true*
++ *NOT the prob that the null hypothesis is true*.
+
+### 3. significance level (alpha)
++ a result is statistically significant if the value of the test statistic is unlikely to occur by chance *if the null hypothesis is true*
+
+### 4. Example: systolic blood pressure (SBP)
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fxzf4i6cadj30xc0csaea.jpg)
+```{r}
+dat_SBP <- c(179.2, 173.1, 168.8, 132, 136.8, 119.2, 141.6, 129.1, 127.3, 96.9, 195.8, 133.4)
+# mean = 123   SD = 23
+# n = 12
+# Whether our sample indicates that this population is from normal tensive or hypertensive?
+
+mean(dat_SBP) # point estimate
+t.test(dat_SBP, conf.level = 0.95)$p.value
+t.test(dat_SBP, conf.level = 0.95)$conf.int[c(1,2)]
+
+# Hypotheses: 
+    # H_0: \mu = 123
+    # H_0: \mu \ne 123
+# Conclusion: Since the inverval does not contain 123, there is evidence that the mean systolic blood pressure from individuals in the rural clinic differs from the US average, 123 which means they are not normal tensive. It appears as though the patient population at the rural clinic on average is not normal tensive (p-value = 0.026). The average SBP was higher than the mean normal tensive level for the general population (mean=144.43), which indicates the population is hypertesive on average (hypertension is a value of 140 or higher).
+```
+
+## Activity12: Type I error
++ *Type I error*: the proportion times one would reject the null hypothesis when the null hypothesis is true.
+
+> as the samples increases, the probability of a type I error becomes closer to the correct 0.05.
+
+The normal range of human temperatures is *from 97.7 degrees to 99.5 degrees* with an average value of *98.2 degrees*. From a large cohort of healthy individuals, it is known that the *standard deviation is 0.7 degrees*.
+```{r}
+set.seed(1)
+temperatures <- readRDS('temperatures.rds')
+```
+
+<Question 1: Type I error for known sigma / (correct) sampling from normal>
+```{r}
+# n = 3
+n <- 3
+mu <- 98.2
+sigma <- 0.7
+alpha <- 0.05 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F) 
+    p.val <- 2 * (1 - pnorm(abs((mean(x)-mu)/(sigma/sqrt(n))))) 
+    if(p.val < alpha) { 
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# n = 10 
+n <- 10
+mu <- 98.2
+sigma <- 0.7
+alpha <- 0.05 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F) 
+    p.val <- 2 * (1 - pnorm(abs((mean(x)-mu)/(sigma/sqrt(n))))) 
+    if(p.val < alpha) { 
+        counter <- counter + 1 
+    }
+}
+counter/reps
+```
+
+<Question 2: Type I error for unknown sigma / (incorrect) sampling from normal
+```{r}
+# n = 3
+n <- 3
+mu <- 98.2
+# sigma is unknown
+alpha <- 0.05 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F) 
+    # using sample sd instead
+    sample.sd <- sd(x)
+    p.val <- 2 * (1 - pnorm(abs((mean(x)-mu)/(sample.sd/sqrt(n))))) 
+    
+    if(p.val < alpha) { 
+        counter <- counter + 1 
+    }
+}
+counter/reps
+```
+
+```{r}
+# n = 10
+n <- 10
+mu <- 98.2
+# sigma is unknown
+alpha <- 0.05 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    # using sample sd instead
+    sample.sd <- sd(x)
+    p.val <- 2 * (1 - pnorm(abs((mean(x)-mu)/(sample.sd/sqrt(n))))) 
+    if(p.val < alpha) { 
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# How do the probabilities of type I errors compare between using the known SD and using the estimate?
+# A: On average, probability of type I error in question 1 is close to the expected 0.05 (or set level of signiﬁcance). The probability of a type I error in question 2 is substantially higher than the expected 0.05. This is because we are estimating the standard deviation from the sample but still using a normal sampling distribution. 
+# Note that as the samples increases, the probability of a type I error becomes closer to the correct 0.05.
+```
+
+<Question 4: Type I error for unknown sigma / sampling from t>
+```{r}
+# n = 3
+n <- 3
+mu <- 98.2
+# sigma is unknown
+alpha <- 0.05 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F) 
+    # using sample sd instead
+    sample.sd <- sd(x)
+    # pnorm to pt
+    p.val <- 2 * (1 - pt(abs((mean(x)-mu)/(sample.sd/sqrt(n))), n-1)) 
+    if(p.val < alpha) { 
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# n = 10
+n <- 10
+mu <- 98.2
+# sigma is unknown
+alpha <- 0.05 
+reps <- 1000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(temperatures, n, replace = F)
+    # using sample sd instead
+    sample.sd <- sd(x)
+    p.val <- 2 * (1 - pt(abs((mean(x)-mu)/(sample.sd/sqrt(n))), n-1)) 
+    if(p.val < alpha) { 
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# How do the probabilities of type I error compare between questions?
+# A: When we use the correct sampling distribution (questions 1 and 4), the probability of type I error is close to 0.05 as expected. However, when we use the incorrect sampling distribution (question 2), the prbability of type I error substantially differs than the expected 0.05, it is more. In this case, the chance of rejecting H_0 when H_0 is true is higher than 0.05.
+```
+
+<Question 6: (Bilirubin) Type I error as a function of sample size>
+In this problem, we are sampling from population of bilirubin values from a population. The true population mean value is *3.28 mg/dL*. We will use a level of significance of *α = 0.025.*
+```{r}
+bilirubin <- readRDS('bilirubin.rds')
+hist(bilirubin) # not normal
+```
+
+```{r}
+# n = 10
+n <- 10 
+mu <- 3.28 
+alpha <- 0.025 
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(bilirubin, n, replace = F) 
+    sample.sd <- sd(x) 
+    p.val <- 2*(1-pt(abs((mean(x)-mu)/(sample.sd/sqrt(n))), n-1)) 
+    if(p.val < alpha) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# n = 100
+n <- 100
+mu <- 3.28
+alpha <- 0.025 
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(bilirubin, n, replace = F) 
+    sample.sd <- sd(x) 
+    p.val <- 2*(1-pt(abs((mean(x)-mu)/(sample.sd/sqrt(n))), n-1)) 
+    if(p.val < alpha) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# n = 750
+n <- 750 
+mu <- 3.28
+alpha <- 0.025 
+reps <- 5000
+
+counter <- 0 
+for(i in seq_len(reps)) { 
+    x <- sample(bilirubin, n, replace = F) 
+    sample.sd <- sd(x) 
+    p.val <- 2*(1-pt(abs((mean(x)-mu)/(sample.sd/sqrt(n))), n-1)) 
+    if(p.val < alpha) {
+        counter <- counter + 1 
+    }
+}
+counter/reps
+
+# Why is the probability of type I error so far from the expected value of 0.025 for the smaller sample sizes?
+# A: One of the assumptions for the t-distribution is that you are sampling from a normal distribution. Clearly, the population of bilirubin values is quite skewed. This is why the probability of type I errors are not accurate for the lower values. 
+
+# As the sample size gets larger, by the central limit theorem, the sampling distribution of the sample means becomes more normal and thus the sampling distribution of the sample means (with σ unknown) approaches a t-distribution. This is why as the sample size increases, the probability of type I errors becomes closer to the expected value of 0.025.
+```
+
+<Question 7: PBC>
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fxzey8e45aj30z00dtdoz.jpg)
++ alpha = 0.05
++ Whetehr the average age of individuals who were on the clinical trial conducted at Mayo Clinic differs from the average age at diagnosis.
+```{r}
+library(survival)
+data(pbc)
+pbcCT <- pbc %>% filter(!(is.na(trt)))
+hist(pbcCT$age)
+```
+$$T=\frac{\hat\mu-\mu}{\hat\sigma/\sqrt{n}}$$
+```{r}
+# Hypotheses are
+    # H_0: \mu = 52
+    # H_a: \mu \ne 52
+
+# test statistic: t-statistic
+n <- length(pbcCT$age)
+t.stat <- (mean(pbcCT$age) - 52) / (sd(pbcCT$age) / sqrt(n)) %>% round(3)
+t.stat
+
+# critical region (two-sided)
+# A: [-infty, -1.968] and [1.968, +infty]
+qt(c(0.025, 0.975), n - 1) %>% round(3)
+
+# 95% CI
+(lb <- mean(pbcCT$age) - qt(0.975, n - 1))
+(ub <- mean(pbcCT$age) + qt(0.975, n - 1))
+
+# point estimate
+mean(pbcCT$age)
+
+# Conclusion: Since the value of the test statistic falls within the rejection region, we would reject the null hypothesis. It appears as though the age of patients on the clinical trial are younger on average than the population of patients with PBC (p-value < 0.05).
+
+# using t.test
+t.test(pbcCT$age, conf.level = 0.95)$conf.int[c(1,2)]
+t.test(pbcCT$age, conf.level = 0.95)$p.value
+
+# Is there evidence that the mean age differs from 52?
+# A: Since the 95% interval p-value is less than the level of significance, 0.05, there is enough evidence that the average age of individuals who were on the clinical trial conduected at Mayo Clinic differs from the average age at diagnosis. It appears as though the individuals on the clinical trial are younger than the individuals of PBC patients on average.
+```
+
+## Lecture13: bootstrap
+
+    * Poisson distribution
+    * Bootstrap CI for the mean
+    
+### 1. Poisson distribution
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxznx6m0fbj30rw0camyu.jpg)
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fxzny2fttrj30wa0n6gnq.jpg)
+
++ sampling distribution
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fxznymz4a3j30xc0da0v6.jpg)
+<br>
++ As the sample size gets larger, by the central limit theorem, the sampling distribution of the sample means becomes more normal
+
+### 2. Bootstrap CI for the mean
+1) Studentized CIs
++ substitute the quantities derived from asymptotic approximations with bootstrap quantities
+
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxzoggvjaej30iq034dg5.jpg)
++ <1> assume (t-distribution assumptions):
+    + sampling from (approximate) normal dist
+    + what to estimate population mean, $\mu$
+    + $\sigma$ (true SD) is unknwon
++ <2> test statistic
+
+$$T=\frac{\hat\mu-\mu}{\hat\sigma/\sqrt{n}}$$
++ <3> Use these quantities from the bootstrap distributions approximated by
+
+$$T^*=\frac{\hat\mu^*-\hat\mu}{\hat\sigma^*/\sqrt{n}}$$
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fxzojucnuyj30y60b80v5.jpg)
+<br>
+
+### 3. Example: E100
+```{r}
+load("e100.RData") # e100
+hist(e100, breaks = 'FD')
+```
+
+```{r}
+# point estimate for lambda
+mean(e100)
+
+# 90% CI
+n <- length(e100)
+(lb <- (mean(e100) - qt(0.95, length(e100) - 1) * sqrt(mean(e100)/n)) %>% round(2))
+(ub <- (mean(e100) + qt(0.95, length(e100) - 1) * sqrt(mean(e100)/n)) %>% round(2))
+
+# bootstrap
+B <- 10000
+n <- length(e100) 
+lambdahat <- replicate(B, {
+    x <- sample(e100, size = n, replace = T)
+    mean(x)})
+
+# check the distribution of lambdahat
+hist(lambdahat, freq = FALSE, breaks=30, col="lemonchiffon")
+curve(dnorm(x, mean = mean(e100), sd = sd(e100)/sqrt(n)), add=TRUE, col="midnightblue", lwd=4) 
+lines(density(lambdahat), lty = 2, col="forestgreen", lwd=4) 
+legend("topright", c("CLT", "bootstrap density"), lty=1:2, col=c("midnightblue","forestgreen"), lwd=2)
+# > the sampling dist is approximately normal. However, the bootstrap may fit a better because n=100 may not be of sufficient size.
+```
+
+```{r}
+# bias
+mean(lambdahat) - mean(e100)
+
+# MSE (i.e. \hat{MSE}[\hat\theta])
+((lambdahat - mean(e100))^2 / B) %>% sum %>% round(3)
+
+# Studentized CIs
+library(boot)
+boot_mean <- function(x, idx) {
+    return(c(mean(x[idx]), var(x[idx]))) 
+}
+boot_obj <- boot(e100, boot_mean, 10000)
+boot_obj$t0[1]
+boot.ci(boot_obj, type = 'all')
+```
+
++ `normal`: which assumes that sampling distribution is approximately normal 
++ `student`: which uses the studentized bootstrap method 
++ `percent`: which uses the bootstrap percentile method
+
+## Activity13
+```{r}
+library(haven)
+dat_nhgh <- read_dta("nhgh.dta")
+dat_nhgh <- dat_nhgh %>% mutate(re = fct_recode(as.character(re), `Mexican American` = "1", 
+    `Other Hispanic` = "2", `Non-Hispanic White` = "3", `Non-Hispanic Black` = "4", 
+    `Other Race Including Multi-Racial` = "5")) %>% mutate(re = fct_relevel(re, 
+    "Non-Hispanic White", "Non-Hispanic Black", "Mexican American", "Other Hispanic", 
+    "Other Race Including Multi-Racial")) %>% mutate(sex = fct_recode(as.character(sex), 
+    Male = "1", Female = "2")) %>% mutate(tx = fct_recode(as.character(tx), 
+    `yes insulin` = "1", `no insulin` = "0")) %>% mutate(dx = fct_recode(as.character(dx), 
+    `yes diabetes` = "1", `no diabetes` = "0")) %>% mutate(income = fct_recode(as.factor(income), 
+    `[0,5000)` = "1", `[5000,10000)` = "2", `[10000,15000)` = "3", `[15000,20000)` = "4", 
+    `[20000,25000)` = "5", `[25000,35000)` = "6", `[35000,45000)` = "7", 
+    `[45000,55000)` = "8", `[55000,65000)` = "9", `[65000,75000)` = "10", 
+    `> 20000` = "11", `< 20000` = "12", `[75000,100000)` = "13", `>= 100000` = "14"))
+
+dat_nhgh %>% ggplot(aes(gh)) + geom_histogram()
+# right skew, so mena > median
+```
+
+<Question1. (NHANES data) Summary statistics>
+```{r}
+# If one glycohemoglobin value changed to 250,000
+# > The mean would greatly increase with this single value change.
+# > The median would either not change at all or change very little (to the next highest value).
+# > The standard deviation and the range would greatly increase, 
+# > but the interquartile range would change only slightly or not at all.
+```
+
+<Question 8: CI for a population proportion>
+```{r}
+# point estimate for the pop prop of females among the NHANES population (the sample proportion for females)
+dat_nhgh %>% group_by(sex) %>% summarise(n())
+prop_fem <- mean(dat_nhgh$sex == 'Female') %>% round(3)
+prop_fem
+
+# 90% CI for the proportion for females
+    # H_0: \pi = 0.5
+    # H_a: \pi \ne 0.5
+test <- binom.test(
+    x = sum(dat_nhgh$sex == 'Female'), 
+    n = length(dat_nhgh$sex),
+    # p = 가 없으면 default = 0.5
+    conf.level = 0.90)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(3)
+# Conclusion: Since the 90% CI for the proportion of females is 0.494 to 0.514 (p-value = 0.544), there is no evidence that there are more males than females.
+
+# The width of a 99% CI compared to the 90% CI
+# > The 99% CI would be wider than the 90% CI (confidence level이 증가하면, CI의 range도 증가)
+```
+
+<Question 9: Hypothesis testing for a population proportion>
++ Whether there is a greater proportion of individuals with diabetes in this population compared to the US prevalance of diabetes, which is 12% of all adults.
+```{r}
+# The hypotheses are:
+    # H_0: p = 0.12
+    # H_a: p \ne 0.12
+    # where p is the proportion of individuals with diabetes.
+
+# p-value
+test <- binom.test(
+    x = sum(dat_nhgh$dx == 'yes diabetes'),
+    n = length(dat_nhgh$dx),
+    p = 0.12, conf.level = 0.95)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(5)
+
+# point estimate
+test$estimate %>% round(3)
+
+# Conclusion: Since the 95% CI is 0.126 to 0.143 (p-value = 0.00029 < 0.001), there is enough evidence that the proportion of individuals with diabetes in the NHANES population differs from the US prevalence of diabetes, 12%.
+# It appears as though there is a greater proportion of individuals with diabetes in the NHANES population compared to the US prevalance of diabetes, which is 12% of all adults.
+```
+
+<Question10: CI for a population mean>
+The average BMI of a US adult is 28.6.
+```{r}
+# point estimate
+mean(dat_nhgh$bmi) %>% round(3)
+
+# 92% CI
+    # H_0: mu = 28.6
+    # H_a: mu \ne 28.6
+test <- t.test(dat_nhgh$bmi, 
+               mu = 28.6, conf.level = 0.92)
+test$estimate %>% round(3)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(3)
+# Conclusion: Since the 92% CI is 28.174 to 28.469 and does not contain 28.6 (p-value = 0.001), there is enough evidence that the mean BMI in the NHANES population differs from the average BMI of a US adult, 28.6%. It appears as though the individuals in the NHANES population has smaller BMI than the average of the US adults.
+```
+
+<Question3: MLE for sample proportion>
+Give the maximum likelihood estimate for a sample proportion for a data set that had 80 successes in a sample of size 200.
+```{r}
+(MLE <- 80/200)
+```
+
+<Question 4: Binomial>
+Suppose we are taking a random sample of *size 150* where there are two outcomes: success or failure. We are interested in the number of successes. The population proportion of a success is *π = 0.66.*
+```{r}
+# binomial distribution and binomial sample porportion
+# Y~B(150, 0.66)
+(mean_Y <- 150 * 0.66)
+(sd_Y <- sqrt(150 * 0.66 * (1 - 0.66)) %>% round(3))
+
+# X = Y/n
+(mean_X <- (150 * 0.66) / 150) # or mean_Y / 150
+(sd_X <- sqrt(150 * 0.66 * (1 - 0.66) / 150) %>% round(3))
+```
+
+<Question 7: standard normal (Z) vs t-distribution>
+How would the 0.98 quantile from a standard normal distribution (z-distribution) compare to the 0.98 quantile from a t-distribution?
+
+> + *The quantile from the t-distribution will always be slightly wider*. 
+> + However, for large degrees of freedom, this diﬀerence will be very small.
+
+<br>
+
+***
+
+## Lecture14: Difference in two proportions / Testing an association (large vs. small sample)
+
+    * Difference in two proportions
+    * Hypo testing: `prop.test()`
+    * Testing an association (large sample: `prop.test()`)
+    * Testing an association (small sample: `fisher.test()`)
+    
+### 1. Differnce between two proportions
++ In 1980, of 750 men 20-34 years old, 130 were found to be overweight.
++ In 1990, of 700 men, 20-34 years old, 160 were found to be overweight.
++ At the 5% significance level, do the data provide sufficient evidence to conclude that for men 20-34 years old, a higher percentage were overweight in 1990 than 10 years earlier?
+
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fxzr4cgan1j30sx0wegqi.jpg)
+
+$$p_{90}-p_{80}=\frac{y_{90}}{p_{90}}-\frac{y_{80}}{p_{80}}=\frac{160}{700}-\frac{130}{750}=0.055$$
++ Sampling distribution for $p_{90}-p_{80}$: mean / SD / shape
+$$E[p_{90}-p_{80}]=\pi_{90}-\pi_{80}\\SD_{\pi_{90}-\pi_{80}}=\sqrt{\frac{\pi_{90}(1-\pi_{90})}{n_{90}}+\frac{\pi_{80}(1-\pi_{80})}{n_{80}}}\\Standardized\space statistic\space Z = \frac{p_A-p_B-(\pi_A-\pi_B)}{\frac{\pi_A(1-\pi_A)}{n_A}+\frac{\pi_B(1-\pi_B)}{n_B}}$$
++ When does the approximation work well?
++ CLT
++ Z ~ N(0, 1)
++ sufficently large when
+$$n_A\pi_A(1-\pi_A) > 10\quad AND\quad n_B\pi_B(1-\pi_B)>10$$
+
+### 2. `prop.test()`: to check the difference between two proportions
+```{r}
+# prop.test(x = [a vector of count of successes], n = [a vector of sample sizes], conf.level = 0.95, correct = [whether corrects for continutiy or not; default is TRUE])
+
+# + In 1980, of 750 men 20-34 years old, 130 were found to be overweight.
+# + In 1990, of 700 men, 20-34 years old, 160 were found to be overweight.
+
+# Using prop.test() to check the difference between two proportions
+    # Hypotheses are:
+        # H_0: \pi_90 - \pi_80 = 0
+        # H_a: \pi_90 - \pi_80 \ne 0
+mat <- rbind(c(160, 130),
+             c(700-160, 750-130))
+colnames(mat) <- c("1990", "1980")
+rownames(mat) <- c("Overweight", "Non overweight")
+mat
+
+test <- prop.test(mat, correct = F)
+test <-prop.test(c(160, 130),
+                 c(700, 750), correct = F)
+test$estimate %>% round(3)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(3)
+# Conclusion: Since the 95% CI for the difference between two proportions does not contain 0 (95% CI: 0.014 to 0.096, p-value = 0.009), there is enough evidence that there is difference in the proportion of men who are overweight between 1990 and 1980. It appears as though there is a greater proportion of mean who are overweight in 1990 compared to 1980. (1990: 0.229, 1980: 0.173)
+```
+
+### 3. Testing an association (large sample: `prop.test()`)
+```{r}
+# observed table
+mat <- rbind(c(160, 130),
+             c(700-160, 750-130))
+colnames(mat) <- c("1990", "1980")
+rownames(mat) <- c("Overweight", "Non overweight")
+mat
+
+# expected table (value)
+(expected_table <- chisq.test(mat)$expected)
+
+# test statistic: Chi-square
+test <- prop.test(mat, correct = F)
+test$statistic %>% round(2)
+```
+
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fxzs7pfz2qj30rw06ejs8.jpg)
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fxzs80s895j30sk074q3s.jpg)
+
+### 4. Testing an association (small sample: `fisher.test()`)
+A preliminary study suggests a benefit from green tea for those at risk of prostate cancer. The study involved *60 men* with PIN lesions, some of which turn into prostate cancer. Half the men were randomly assigned to 600 mg a day of a green tea extract while the other half were given a placebo. The study was double-blind, and the results after one year are shown in the table below. *Does the sample provide evidence that taking green tea extract reduces the risk of developing prostate cancer?*
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fxzse191yaj30do05mmxe.jpg)
+
+```{r}
+# Observed table
+mat <- cbind(c(1, 9),
+             c(29, 21))
+rownames(mat) <- c("Green Tea", "Placebo")
+colnames(mat) <- c("Cancer", "No Cancer")
+mat
+
+# Expected table
+chisq.test(mat)$expected
+# > Use `fisher.test()` (i.e. Fisher's exact test) Chi-square is also okay in this case.
+
+# Hypotheses are:
+    # H_0: \pi_GT = \pi_P (There is no association between variables.)
+    # H_a: \pi_GT \ne \pi_P (There is association between variables.)
+
+# Fisher's exact test
+test <- fisher.test(mat, conf.int = T,
+                    conf.level = 0.95)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(3)
+# ***Conclusion: There is enough evidence that the green tea is associated with prostate cancer. (p-value = 0.012)
+# There is evidence that that there is association between green tea and prostate cancer.
+# There is evidence that green tea works (p-value = 0.012). It appears as though individuals treated with green tea are less likely to develop a prostate cancer compared to those treated with placebo: 3.3% developed cancer when treated with green tea compared to 30% developed cancer when treated with placebo.
+```
+
+## Activity14
+<Question 1: Confidence interval of a difference>
+
+A study was conducted to study the relationship between drinking coffee and myocardial infarction (MI), which is the term for a heart attack, in women aged 30-49 years. This retrospective study included *487 cases* hospitalized for the occurrence of MI. There were *980 controls* hospitalized for an acute condition (trauma, acute cholecysitis, acute respiratory disease, and appendicitis) that were selected. Individuals were classified by their MI status (MI versus control) and their caffeinated coffee consumption (≥ 5 cups per day versus < 5 cups per data). The data are in the following table:
+
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fxzwcw81hqj308e03emxa.jpg)
++ to evaluate whether there is an association between the amount of coffee consumption and incident MI in the population of women ages 30-49 years.
+```{r}
+# observed table
+mat <- rbind(c(152, 183),
+             c(335, 797))
+rownames(mat) <- c(">=5", "<5")
+colnames(mat) <- c("MI", "control")
+mat
+
+# the estimate of \pi_{MI}, the proportion of MI patients who drank 5 or more cups of coffee per day
+(152 / (152 + 335)) %>% round(3)
+
+# the estimate of \pi_C, the proportion of control patients who drank 5 or more cups of coffee per day
+(183 / (183 + 797)) %>% round(3)
+
+# 99% CI for the estimate of \pi_{MI}, the proportion of MI patients who drank 5 or more cups of coffee per day
+test <- binom.test(x = 152, n = 152 + 335,
+                   conf.level = 0.99)
+test$conf.int[c(1,2)] %>% round(3)
+
+# 99% CI for the estimate of \pi_C, the proportion of control patients who drank 5 or more cups of coffee per day
+test <- binom.test(x = 183, n = 183 + 797,
+                   conf.level = 0.99)
+test$conf.int[c(1,2)] %>% round(3)
+
+# Conclusion: It appears as though there is evidence that there is a difference in the two population proportions. This is becuase there is no overlap between the two 99% CIs. It appears that on average, a higher proportion of somen who suffered an MI drank 5 or more cups of coffee per day compared to the control women: 0.312 compared to 0.187, respectively.
+
+# Point estimate & 99% CI for the difference in the population proportion of women who drank 5 or more cups per day between women who suffered an MI and the controls.
+ptEst <- 152/(152+335) - 183/(183+797)
+test <- prop.test(c(152, 183), c(152+335, 183+797), correct = F, conf.level = 0.99)
+
+ptEst %>% round(3)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value
+
+# Hypotheses are:
+    # H_0: There is no association between the amount of coffee consumption and incident MI in the population of women ages 30-49 years.
+    # H_a: There is association between the amount of coffee consumption and incident MI in the population of women ages 30-49 years.
+
+# Conclusion: We estimate the the difference in proportions of women who drank 5 or more cups of coﬀee per day with vs without MI is 12.5%, with a 99% CI from 6.3% to 18.8%. Since the 99% CI does not contain 0 (p-value < 0.0001), we have evidence of an association between coffee consumption and MI. 
+# It appears as though on average, the proportion of women who drank 5 or more cups of coffee is 12.5% (absolute) higher among those with an MI than those without.
+
+# Would you advise women to reduce their coffee consumption? Explain.
+# A: No. From our analysis we can only demostrate associations, but advising women to reduce their coffee consumption would require evidence of a causal relationship 
+
+# (Correlation is not causation / Association is not causation).
+```
+
+---
+`prop.test()` vs. `binom.test()`
+**** Note that
+> + 두 proportions의 differnce나 association을 비교할 때 `prop.test()`를 사용
+> + 하나의 proportion의 confidence interval을 구할 때에는 `binom.test()`를 사용
+
+---
+
+<Question 2: Hypothesis test of a difference>
+
+A medical researcher conjectures that smoking can result in wrinkled skin around the eyes. The researcher recruited *150 smokers* and *120 non-smokers* to take part in an observational study and found that *95 of the smokers and 115 of the non-smokers* were seen to have prominent wrinkles around the eyes (based on a standardized wrinkle score administered by a person who did not know if the subject smoked or not).
+
+We want to *perform a two-sided hypothesis test for a difference in proportions to determine whether the data support the researcher's conjecture*.
+```{r}
+# Hypotheses are:
+    # H_0: p_{smokers} = p_{non-smokers} (There is no difference in proportions between smokers and non-smokers)
+    # H_a: p_{smokers} \ne p_{non-smokers} (There is difference in proportions between smokers and non-smokers)
+    # where p_K is the probability of having prominent wrinkles among the population K.
+
+# observed_table
+mat <- matrix(c(95, 115, 150-95, 120-115), nrow= 2)
+rownames(mat) <- c("smoke", "no smoke")
+colnames(mat) <- c("wrinkles", "no wrinkles")
+mat
+
+# pooled estimate for the population proportion assuming the null hypothesis is true.
+pooled_prop <- ((95 + 115) / (150+120)) %>% round(3)
+
+# z-statistic
+z <- abs(95/150 - 115/120) / sqrt(pooled_prop*(1 - pooled_prop) * (1/150 + 1/120))
+z
+```
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fxzxjt83uzj30xk07eta3.jpg)
+
+```{r}
+# p-value (both methods show the same results)
+2 * (1 - pnorm(z))
+
+test <- prop.test(c(95, 115), c(150, 120), correct = F, conf.level = 0.99)
+test$estimate %>% round(3)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value
+
+# Conclusion: There is sufficient evidence against the null hypothesis that there is no difference in proportions of people who have prominent wrinkles between the people who smoke and those who do not moke. (p-value < 0.0001). 
+# It appears as though there is a higher proportion of people with prominent wrinkles among non-smokers than smokers: 95.8% vs. 63.3%, respectively. These data support the hypothesis that there is an association between smoking status and prominent wrinkles.
+```
+
+<Question 3: Hypothesis test of an association>
++ Same example but testing an association between smoking status and prominent wrinkles.
+```{r}
+# oberved table
+mat <- matrix(c(95, 115, 150-95, 120-115), nrow= 2)
+rownames(mat) <- c("smoke", "no smoke")
+colnames(mat) <- c("wrinkles", "no wrinkles")
+mat
+
+# expected table
+chisq.test(mat)$expected
+# > Using Chi-square test
+
+# test statistic
+test <- prop.test(c(95, 115), c(150, 120), correct = F, conf.level = 0.95)
+test$statistic %>% round(3)
+
+# p-value using `pchisq()`
+1 - pchisq(test$statistic, df = ((2-1)*(2-1)))
+
+# Conclusion: There is enough evidence that prominent wrinkles is associated with smoking status. (p-value < 0.0001)
+# There is evidence that there is association between prominent wrinkles and smoking status.
+# It appears as though people who smoke are less likely to develop prominent wrinkles around their eyes compared to those who do not smoke: 63.3% vs. 95.8%, respectively.
+```
+
+<Question 4: Small sample proportions>
+A 1980 study investigated the relationship between the use of oral contraceptives (OCs) and the development of endometrial cancer. The researchers found that of *117 endometrial-cancer patients*, *6 had used the OC Oracon* at some point in their lives, whereas *8 of the 395 controls* had used this agent.
+
+*Test for an association between the use of Oracon and the incidence of endometrial cancer*, using a two-tailed test. Use alpha = 0.05.
+```{r}
+# The hypotheses are:
+    # H_0: p_OC = p_non-OC
+    # H_a: p_OC \ne p_non-OC
+
+# Observed table
+mat <- rbind(c(6, 8),
+             c(117-6, 395-8))
+colnames(mat) <- c("cancer", "no cancer")
+rownames(mat) <- c("OC", "Non OC")
+mat
+
+# Expected table
+chisq.test(mat)$expected
+# > Since there is one cell < 5, use Fisher's exact test
+
+# Fisher's exact test
+test <- fisher.test(mat, conf.int = T, conf.level = 0.95)
+test
+
+# Conclusion: We do not have enough evidecne that oral contraceptive (OC) use and enometrial cancer are associated (p-value = 0.09987).
+```
+
+***
+
+## Lecture15: Sample size and power for comparing two proportions / RxC Contingency Table / Fisher's exact test for multiple factors / Mosaic plot
+
+    * Sample size and power for comparing two proportions
+    * RxC Contingency Table
+    * Mosaic plot
+    * Fisher's exact test for multiple factors
+    
+### 1. Sample size and Multiple proportions
+1) Sample size for comparing *two proportions*
++ level of significane
++ power
++ minimum detectable difference (Mdd)
+    + For detectable difference:
+        + need (alternative) hypothesized values for $\pi_1$ and $\pi_2$
+        + OR a historical value for one group (say $\pi_1$) and desired difference to detect ($\Delta$, ∆)
+
+Suppose we are planning a randomized trial of dietary interventions affecting weight gain in adults. We want to compare adults randomized to a high-fiber diet versus adults randomized to their usual diet, with the outcome being a 10+ pound weight gain after 5 years. In other words, we want to compare the proportion of adults in each group who gained 10 or more pounds after 5 years. It is known that without any intervention, *20%* of adults gain 10 or more pounds over a 5 years period. The investigators want to determine what sample size is necessary to determine whether the high-fiber diet reduces this to *10%* (or less). We want to have a two-sided α = 0.05 and 90% power.
+
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy0ez4y7f1j30s20ewq4h.jpg)
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy0f4gqxx0j30l00cs402.jpg)
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy0f528802j30r40bu0tu.jpg)
+
++ Use `power.prop.test()` function in R
+    + `n`: number of observations (per group)
+    + `p1`: probability in one group
+    + `p2`: probability in the other group
+    + `sig.level`: significance level (Type I error probability)
+    + `power`: power of the test (1-beta)
+    + `alternative`: one- or two-sided test
+
+```{r}
+# pi1 = 일반식 pi2 = high-fiber식
+power.prop.test(p1 = 0.20,
+                p2 = 0.10,
+                power = 0.90,
+                sig.level = 0.05)
+```
+
+### 2. RxC contingency table
+Suppose a study examines the relative eﬃcacy of penicillin and spectinomycin in treating gonorrhea. Three treatments are considered (1) penicillin, (2) spectinomycine, low dose, and (3) spectinomycin, high dose. Three possible responses are recorded: (1) positive smear, (2) negative smear, positive culture, and (3) negative smear, negative culture. The data are below:
+
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy0f92n8lnj30s607qgmg.jpg)
+
++ Is there an association between treatment and outcome?
++ Do the proportions of the different outcomes differ by treatment?
+```{r}
+# observed table
+mat <- matrix(c(40, 30, 130, 10, 20, 70, 15, 40, 45), byrow = T, nrow = 3)
+rownames(mat) <- c("penicillin", "spec-low", 'spec-high')
+colnames(mat) <- c("+Smear", "-Smear/+Culture", "-Smear/-Culture")
+mat
+
+# expected table
+chisq.test(mat)$exp
+# > every cell has the value > 5, so use Chisq-test instead of Fisher's exact test.
+```
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy0hmmcu2ej30rk0cs0ug.jpg)
+
+```{r}
+# Chi-square test
+test <- chisq.test(mat, correct = F)
+    # test statistic
+test$statistic
+    # p-value
+test$p.value # or
+1 - pchisq(test$statistic, df = ((3-1)*(3-1)))
+
+# Conclusion: there is enough evidence against the null hypothesis that the proportions outcomes are the same among the treatment groups (p-value < 0.0001).
+```
+
+### 3. Mosaicplot
+```{r}
+library(vcd)
+pen <- c(40, 30, 130)
+specLow <- c(10, 20, 70)
+specHi <- c(15, 40, 45)
+mat <- rbind(pen, specLow, specHi)
+colnames(mat) <- c("+S", "-S/+C", "-S/-C")
+mat
+```
+
+```{r}
+test <- chisq.test(mat, correct = F)
+test
+```
+
+```{r}
+mosaicplot(mat, shade = T, main = 'Mosaic plot', xlab = 'treatment', ylab = 'Outcome')
+
+# Conclusion: There is a difference among the treatments but there is no clear winner. It appears as those the spec-high treatment has the greates proportion of individuals who have a negative smear but stil have a positive culture.
+# On the other hand, it has a lower poroption of those with a negative smear and negative culture.
+# The penicillin group has the lowest negative smear and positive culture.
+# The low-spec group has neither higher or lower proportions in any group.
+```
+
+### 4. Fisher's exact test for multiple factors (small sample)
+We are interested in association between adolescent hypertension and obesity. For this purpose, we choose 30 normal-weight adolescent boys (i.e. BMI < 25), 30 overweight adolescent boys (25 ≤ BMI < 30), and 35 obese adolescent boys (i.e. BMI ≥ 30). We ﬁnd the following:
+
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fy0i0de0n8j30pi06mwez.jpg)
+```{r}
+# observed table
+mat <- matrix(c(2, 4, 9, 28, 26, 26), byrow = T, nrow = 2)
+colnames(mat) <- c("BMI<25", "25 ≤ BMI < 30", "BMI ≥ 30")
+rownames(mat) <- c("HTN", "no HTN")
+mat 
+
+# expected table
+suppressWarnings(chisq.test(mat)$expected)
+# > Since 1/5 of cells have < 5, so use Fisher's exact test
+```
+
+```{r}
+# The hypotheses for Fisher's exact test are:
+    # H_0: \pi_N = \pi_OW = \pi_OB
+    # H_a: at least one \pi differs (!주의)
+
+# Fisher's exact test
+test <- fisher.test(mat, conf.int = T, conf.level = 0.90)
+test
+
+# Conclusion: No enough evidence was found that there is an association between weight and hypertension within adolescent boys (p-value = 0.1219). It appears as though the proportion of boys with hypertension is similar among the weight groups.
+```
+
+```{r}
+# Mosaic plot
+mosaicplot(mat, shade = T, main = "Mosaic plot", xlab = 'treatment', ylab = 'outcome')
+```
+
+```{r}
+# What if we use Chi-square test for this weight-hypertension of adolescent boys example?
+chisq.test(mat, correct = F)
+chisq.test(mat, correct = F, simulate.p.value = T)
+
+# Conclusion: No enough evidence was found that there is an association between weight and hypertension within adolescent boys (p-value = 0.1219). It appears as though the proportion of boys with hypertension is similar among the weight groups.
+```
+
+## Activity15
+<Question 1: Sample size calculation (`power.prop.test()`)>
+
+Suppose we want to do a study on a new treatment for pancreatic cancer. The endpoint will be tumor response rate, which is determined on the basis of whether a tumor shrinks. If the tumor shrinks by *50% of more of its original size*, the patient is classified as having a response. *Otherwise* they are classified as not having a response. Suppose the response status is evaluated at 8 weeks after treatment initiation. For the best available treatment to date, the response rate is about *0.15 (or 15%)*. The study team will randomize patients between the best available treatment (called standard of care, SOC) and the new drug. They want to know how large of a sample is needed to have *90% confidence* using a two-sided *α = 0.10.* They would only be interested in the targeted treatment if the response rate is *0.15 or more than the response rate for SOC*.
+
+How many patients are needed?
+```{r}
+test <- power.prop.test(p1 = 0.15,
+                p2 = 0.15 + 0.15,
+                power = 0.90,
+                sig.level = 0.10)
+# The number of patients needed is found in the results saved in test and is (이건 per group임)
+test$n %>% ceiling
+
+# *** (전체 필요샘플 수 구하려면 곱하기2 하는 것 잊지 않기!) The total number of patients that will need to be randomized is twice taht or 
+test$n %>% ceiling * 2
+```
+
+<Question2: Large sample test>
+A study was done to *determine whether there is an association between marital status and depression in older US adults*. The data are in `depression.csv`. There are two factors. Factor one is *depression* which has three levels: *mild, normal and severe*. The other factor of interest is *marital status* with the levels: *single, married, and div/wid*. We want to perform a hypothesis test for association using a significance level of α = 0.01. 
+```{r}
+dat_depression <- read.csv('depression.csv')
+```
+
+```{r}
+# The hypotheses are
+    # H_0: There is no association between marital status and depression in older US adults.
+    # H_a: There is an association between marital status and depression in older US adults.
+
+# Observed table
+mat <- table(dat_depression)
+
+# Expected table
+chisq.test(mat)$exp
+# > Since every cell has > 5, using Chi-square test is appropriate.
+
+# test statistic
+test <- chisq.test(mat, correct = F)
+test$statistic %>% round(2)
+
+# p-value
+test$p.value %>% round(3)
+
+# Conclusion: There is no enough evidence that there is an association between marital status and depression in older US adults. (p-value = 0.145)
+```
+
+<Question3: Small sample>
+A survey was conducted to understand the habits of college students. Two questions included information on their smoking habits and another on their exercise habits. One factor is *smoking status* with four levels: *heavy, never, occasionally, and regularly*. The other factor is regarding the *amount of exercise* with three levels: *frequent, none, and some*. The investigators would like to evaluate *whether there is an association between smoking habits and exercise*. The data are in `habits.csv`. The investigators will use a *α = 0.025* level of significance.
+```{r}
+dat_habits <- read.csv('habits.csv')
+```
+
+```{r}
+set.seed(1)
+# Observed table
+mat <- table(dat_habits)
+mat
+
+# Expected table
+chisq.test(mat)$exp
+# > Since there are more than 1/5 of the cells that have values < 5, using Fisher's exact test looks more appropriate.
+
+# Fisher's exact test
+test <- fisher.test(mat, conf.int = T, conf.level = 0.975)
+
+test$p.value %>% round(3)
+
+# What if we use a chi-square test?
+chisq.test(mat, correct = F, simulate.p.value = T)$p.value %>% round(3)
+
+# Conclusion: There is no evidence that there is an association between smoking habits and exercise. (p-value = 0.405 for Fisher's exact test, or p-value = 0.494 for Chi-square test.)
+```
+
+<Question4: Titanic data>
+In 1912 the luxury liner Titanic, on its first voyage, struck an iceberg and sank. Some passengers got off the ship in lifeboats, but many died. Think of the Titanic disaster as an experiment in how the people of that time behaved when faced with death in a situation where only some can escape. The passengers are a sample from the population of their peers. The dataset `titanic.csv` contains information about who lived and who died, by gender and economic status. (The data leave out a few passengers whose economic status is unknown.) The data contains:
++ `gender`: male or female
++ `class`: the ticket type purchased by the passenger
++ `status`: an indication if the passenger survived or died
+
+```{r}
+dat_titanic <- read.csv('titanic.csv', header = T)
+```
+
+```{r}
+# Observed table
+mat <- table(dat_titanic[,-1])
+mat
+
+# Mosaic plot
+mosaicplot(mat, shade = T, main = 'Mosaic plot', xlab = 'class', ylab = 'status')
+
+# Looking at the mosaic plot, it appears as though a greater portion of individuals with highest class survived and the smallest portion of individuals with the lowest class tick survived.
+# The mid-class group showed neither higher or lower proportion of survival.
+```
+
+***
+
+## Lecture16: Comparing Two Means
+
+    * Comparing means of independent samples: permutation test
+    * Two independent samples with equal variances: t.test with `var.equal = T` option
+    * Two independent samples with unequal variances: t.test
+    * ㄴCI for the difference of two independent means based on large sample theory
+    * Paired data (non-independent): 1) diff구해서 one-sample t.test OR 2) t.test with `paired = T` option
+
+### 1. Comparing means of independent samples: `permutation test`
+
++ *When the distribution is skewed and the sample size might not be big enough for the CLT to work, use `permutation test`*.
+
+This dataset is from the Duke University Cardiovascular Disease Databank and consists of 3504 patients and 6 variables. The patients were referred to Duke University Medical Center for chest pain. Patients were classified as having severe *coronary disease* if they were found to have three-vessel or left main disease and is denoted by `tvdlm = 1`.
++ `sex`: male = 0, female = 1
++ `age`: age of patient when they presented with symptoms
++ `cad.dur`: duration of symptoms of coronary artery disease
++ `choleste`: Cholesterol mg%
++ `tvdlm`: severe = 1; not severe = 0
+```{r}
+dat_acath <- read.csv("acath.csv", header=TRUE) 
+coronary <- dat_acath %>%
+    mutate(sex = fct_recode(factor(sex), "male" = "0", "female" = "1")) %>%
+    mutate(tvdlm=fct_recode(factor(tvdlm), "severeDx"="1","nonSevereDx"="0")) %>%
+    select(sex, age, cad.dur, choleste, tvdlm) %>%
+    filter(!is.na(choleste)) %>%
+    filter(!is.na(tvdlm))
+```
+
+```{r}
+# <Permutation test>
+# compare the ages between groups
+boxplot(age ~ tvdlm, data = coronary)
+
+# The hypotheses are: (permutation test)
+    # H_0: \mu_{Severe} = \mu_{notSevere}
+    # H_a: \mu_{Severe} \ne \mu_{notSevere}
+
+# calulate the difference between groups
+observedMeans <- tapply(coronary$age, coronary$tvdlm, mean) 
+
+observedDiff <- c(diff = observedMeans[1] - observedMeans[2]) 
+observedDiff %>% round(3)
+
+# permutation sampling distribution of mean (bootstrap과 유사함)
+n <- nrow(coronary) 
+B <- 10000
+permDist <- replicate(B, { 
+    permAge <- sample(coronary$age, size = n, replace = F) 
+    permMeans <- tapply(permAge, coronary$tvdlm, mean) 
+    permMeans[1] - permMeans[2] 
+    })
+
+# p-value
+p.val <- (sum(permDist >= abs(observedDiff)) + sum(permDist <= -abs(observedDiff))) / B
+p.val
+
+# Conclusion: there is a difference in the mean ages for individuals with severe coronary disease and those without severe coronary disease (p-value < 0.0001) at a \alpha = 0.05 level. It appears as though on average, the ages for indviduals with severe coronary disease is older than patients without severe coronary disease on average.
+```
+
+### 2. Two independent samples with equal variances: `t.test()` with `var.equal = T` option
+```{r}
+# compare the cholesterol level between groups
+boxplot(choleste ~ tvdlm, data = coronary)
+
+# The hypotheses are: (permutation test)
+    # H_0: \mu_{Severe} = \mu_{notSevere} (There is no difference in mean cholesterol levels between severe and non-severe groups.)
+    # H_a: \mu_{Severe} \ne \mu_{notSevere} (There is no difference in mean cholesterol levels between severe and non-severe groups.)
+```
+
+```{r}
+# test statistic (equal variances)
+```
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy0l4x5b2rj30l009igmn.jpg)    
+
++ sampling distribution
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy0l6dik6dj30tk09wmyv.jpg)
+
+```{r}
+# `t.test` with equal vairances
+test <- t.test(choleste ~ tvdlm,
+               data = coronary,
+               var.equal = T, 
+               conf.level = 0.95)
+test
+# Conclusion: There is no evidence that there is difference in mean cholesterol levels between severe and non-severe groups. It appears as though the mean cholesterol level for severe patients is higher than the mean cholesterol level for non-severe patients.
+```
+
+### 3. Two independent samples with unequal variances: `t.test()`
++ Everything remains the same except the assumption: we cannot assume the two variances are equal.
+
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy0mbk7h24j30s00b6jso.jpg)
+
++ sampling distribution
+    + Since we assumed that we don't know the variance, exact distribution of T is not known.
+    + So, we use approximation: approximately a t-distribution with df given by the Welch's approximation.
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy0mc70s3kj30r80a4406.jpg)
+
+```{r}
+test <- t.test(choleste ~ tvdlm, 
+               data = coronary,
+               var.equal = F, 
+               conf.level = 0.95)
+test
+# Welch's approximation을 이용했기 때문에 df가 정수가 아닌 것을 확인할 수 있음
+```
+
+### 4. CI for the difference of two independent means based on large sample theory
+```{r}
+boxplot(cad.dur ~ tvdlm, 
+        data = coronary,
+        var.equal = F)
+
+# Assuming equal variances
+test_ev <- t.test(cad.dur ~ tvdlm,
+                  data = coronary, 
+                  var.equal = T,
+                  conf.level = 0.90) 
+test_ev
+
+# Assuming unequal variances
+test_uev <- t.test(cad.dur ~ tvdlm,
+                  data = coronary, 
+                  var.equal = F,
+                  conf.level = 0.90) 
+test_uev
+# Conclusion: Since the confidence interval does not contain 0 (p-value < 0.0001 for both, uneuqal and equal variances), we can conclude that there is difference in means of duration of symptoms of coronary artery disease between severe and non-sever groups. It appears as though severe patients group has a higher mean of duration of symptoms of coronary artery disease than the non-sever group.
+```
+
+### 5. Paired data (non-independent): 1) diff구해서 `one-sample t.test` OR 2) `t.test` with `paired = T` option
+
+Suppose we wanted to generate the *99% confidence interval* for the mean difference between the *PSA levels between year 0 and 1*. Again, since this is *paired data*, we will compute the difference between the year 1 PSA and year 0 PSA for each man. This is in the R object `psaDiff`.
+```{r}
+psaData <- read.csv("plco_dat_n25.csv")
+```
+
+```{r}
+# <Paired data: method1 diff먼저구하기>
+# compute the difference in values for each man
+psaDiff <- psaData %>% mutate(psa_diff = psa_level1 - psa_level0) %>% pull(psa_diff)
+# `t.test` to check the significant difference
+test1 <- t.test(psaDiff, conf.level = 0.95)
+
+test1$estimate
+test1$conf.int[c(1,2)] %>% round(3)
+test1$p.value %>% round(3)
+# <Paired data: method2 따로 two-sample로 구하기>
+test2 <- t.test(psaData$psa_level1,
+               psaData$psa_level0, 
+               paired = T, na.exclude = T,
+               conf.level = 0.95)
+
+test2$estimate
+test2$conf.int[c(1,2)] %>% round(3)
+test2$p.value %>% round(3)
+# > Differnce를 구해서 one-sample t-test를 하나 두 개를 따로 나눠서 two-sample paired t-test를 하나 p-vaue는 서로 동일함
+
+# Conclusion: The point estimate for the mean difference in PSA level between year 1 and year 0 is 0.476. The corresponding 99% CI is from -0.039 to 0.99. Since the interval contains 0, there is no evidence that there is difference in the mean year 1 PSA level and year 0 PSA level (p-value = 0.068 for both methods) using a alpha = 0.05 level of significance.
+```
+
+## Acitivity16
+This data is from the Mayo Clinic trial in primary biliary cirrhosis (PBC) of the liver conducted between 1974 and 1984. A total of *424 PBC patients*, referred to Mayo Clinic during that ten-year interval, met eligibility criteria for the randomized placebo controlled trial of the drug D-penicillamine. The *first 312 cases* in the data set participated in the randomized trial and contain largely complete data. The *additional 112 cases* did not participate in the clinical trial, but consented to have basic measurements recorded and to be followed for survival. *Six of those cases were lost to follow-up* shortly after diagnosis, so the data here are on an *additional 106 cases* as well as the *312 randomized participants*.
+```{r}
+library(survival)
+pbcData <- pbc %>%
+    filter(!is.na(trt)) %>%
+    select(id, trt, age, bili, chol, albumin, copper, trig, protime) %>%
+    mutate(trt = fct_recode(factor(trt), "Dpen" = "1", "placebo" = "2"))
+```
+
+<Question1: Analysis of serum cholesterol>
+
+For this problem, we will compare the mean serum cholesterol values between the treatment groups.
+```{r}
+# compare the mean serum cholesterol between the treatment groups
+boxplot(chol ~ trt, data = pbcData) 
+# > both distirbution looks very similar 
+
+# Make a histogram of the pooled cholesterol data and describe the shape.
+hist(pbcData$chol, breaks = 'FD')
+# > The pooled cholesterol is unimodal and skewed right.
+
+# Hypothesis testing: to compare the mean cholesterol values between the two treatment groups.
+
+# 1) The hypotheses are:
+    # H_0: \mu_{Dpen} = \mu_{Placebo}
+    # H_a: \mu_{Dpen} \ne \mu_{Placebo}
+
+# 2) Assume the two pop variances are equal. Test statistic / DF / p-value
+test <- t.test(chol ~ trt, data = pbcData, var.equal = T, conf.level = 0.95)
+
+test$statistic %>% round(3)
+test$parameter #df
+test$p.value %>% round(3)
+
+# Conclusion: At the level of significance of alpha = 0.05, we should conclude that there is no enough evidence that there is signifcant diffrence in means of cholesterol levels in those treated with D-penicilliamine vs. placebo. (p-value = 0.748)
+
+# 3) Assume the two pop variances are NOT equal. Test statistic / DF / p-value
+test <- t.test(chol ~ trt, data = pbcData, var.equal = F, conf.level = 0.95)
+
+test$statistic %>% round(3)
+test$parameter #df is not integer because it's using Welch's approximation
+test$p.value %>% round(3)
+
+# Conclusion: The t-statistic is similar when assuming equal vs unequal variances, but the degrees of freedom are smaller when assuming unequal variances. However, this change in degrees of freedom was not substantial enough to have a large impact on the p-value since our sample size is relative large.
+```
+
+<Question2: Analysis of blood clotting time>
+
+For this problem, we will compare the mean clotting times between the treatment groups.
+```{r}
+# Make side-by-side boxplots. compare between the two groups?
+boxplot(protime ~ trt, data = pbcData)
+# > The medians are about the same, as is the min and the lower quartile. However, the upper quartile and max are higher in the placebo, suggesting the mean is also higher in placebo patients.
+
+# Histogram of pooled clotting time
+hist(pbcData$protime, breaks = 'FD')
+# > The distribution of clotting times is unimodal and more strongly skewed right than cholesterol.
+
+# What is the point estimate for the difference in clotting time between the two treatment groups? 
+pbcData %>% group_by(trt) %>% summarise(mean(protime) %>% round(2))
+# > The mean clotting time is 10.65 among the treated, and 10.80 among the placebo patients, so the treated have a mean clotting time 0.15 smaller than placebo patients.
+
+# Assume that the two population variances are equal. 90% CI for the difference in mean clotting time between two groups.
+test <- t.test(protime ~ trt, data = pbcData,
+               var.equal = T, conf.level = 0.90)
+test$estimate
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(3)
+
+# Conclusion: At the level of significance of alpha = 0.1, there is not enough evidence that there is significant difference in means of clottting time between D-Penn patients and placebo patients (p-value = 0.197). 
+# *** While we estimate that the mean time is 0.147 higher in D-Penn patients, the 90% CI for this difference contains 0 (90% CI 0.334 lower to 0.041 higher in D-Penn patinets than placebo patients.)
+
+# Assume that the two population variances are equal. 90% CI for the difference in mean clotting time between two groups.
+test <- t.test(protime ~ trt, data = pbcData,
+               var.equal = F, conf.level = 0.90)
+test$estimate
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(3)
+# Conclusion: The conﬁdence intervals are very similar, though not exactly the same. Our conclusions do not change in this example.
+```
+
+<Question3: Analysis of bilirubin>
+
+For this problem, we will compare the mean serum bilirubin values between the treatment groups.
+```{r}
+set.seed(2)
+## Make side-by-side boxplots. between the two groups?
+boxplot(bili ~ trt,data = pbcData)
+# > A: There is not a drastic difference in bilirubin levels between D-Penn and placebo patients, though placebo patients may have slightly higher leves.
+
+## Histogram of pooled bilirubin
+hist(pbcData$bili, breaks = 'FD')
+# > A: The pooled cholesterol is unimodal and skewed right with quite a long tail.
+
+## Hypothesis test: to compare the mean bilirubin values between the two treatment groups.
+# 1) The hypotheses are:
+    # H_0: \mu_{Dpen} = \mu_{Placebo}
+    # H_a: \mu_{Dpen} \ne \mu_{Placebo}
+    # where the \mu_i is the mean bilirubin level in population i.
+
+## 2) The data are quite skewed and the sample size might not be big enough for the CLT work. >>> Permutation test. Report the p-value
+
+observedMeans <- tapply(pbcData$bili, pbcData$trt, mean) 
+observedDiff <- c(diff = observedMeans[1] - observedMeans[2]) 
+observedDiff %>% round(3)
+
+## permutation sampling distribution of mean (bootstrap과 유사함)
+n <- nrow(pbcData) 
+B <- 10000
+permDist <- replicate(B, { 
+    permAge <- sample(pbcData$bili, size = n, replace = F) 
+    permMeans <- tapply(permAge, pbcData$trt, mean) 
+    permMeans[1] - permMeans[2] 
+    })
+
+## p-value
+p.val <- (sum(permDist >= abs(observedDiff)) + sum(permDist <= -abs(observedDiff))) / B
+p.val
+
+## Conclusion: There is no enough evidence that the bilirubin levels differes between D-pen patients and placebo. (p-value = 0.1287)
+
+## Using `bootstrap method`
+library(boot) 
+B <- 10000 
+n1 <- sum(pbcData$trt=="Dpen") 
+n2 <- sum(pbcData$trt=="placebo")
+
+bootDiff <- replicate(10000, { 
+    boot_avm <- sample(pbcData$bili[which(pbcData$trt == "Dpen")], size = n1, replace = T) 
+    boot_abm <- sample(pbcData$bili[which(pbcData$trt == "placebo")], size = n2, replace = T)
+    mean(boot_avm) - mean(boot_abm) 
+    } 
+)
+
+## 95% CI
+quantile(bootDiff, c(0.025, 0.975)) %>% round(3)
+## Conclusion: patients is 1.754 mg/dl lower to 0.219 mg/dl higher than in placebo patients.
+
+## 95% CI for the differende in means assumping unequal variances.
+test <- t.test(bili ~ trt, data = pbcData, 
+               var.equal = F, conf.level = 0.95)
+test$conf.int[c(1,2)] %>% round(3)
+test$p.value %>% round(3)
+## Conclusion: There is no evidence that there is a significant difference in means of bilirubin levels between Dpen patients and placebo group. (p-value = 0.1329) at the level of significance of alpha = 0.05, two-sided.
+
+## Compare the p-values between `t.test with unequal variances` result to the `permutation test`.
+# > A: The p-value is very similar and and the conclusion is the same as the permutation test. this is indicative of the robustness of the t-test.
+# (p-value of permutation test = 0.1287 vs. p-value of t.test = 0.1329)
+
+## Compare the 95% CI between `t.test with unequal variances` result to the `bootstrapped quantile method`.
+# > A: (95% CI of bootstrapped distribution = -1.818 to 0.223) vs. (95% CI of t.test = -1.788 to 0.237)
+# The 95% quantile CI from a t-test with unequal variances estimates that mean bilirubin levels is D-pen patients is 1.788 mg/dl lower to 0.237 higher than in placebo patients.
+# This is again very close to the confidence interval estimated from the bootstrapping quantile method.
+```
+
+<Question 4: General question>
+Would you be surprised if there were statistically significant differences between the means of any of the continuous variables between the two treatment groups? Explain.
+
+> + No, because these are all baseline variables in a randomized trial, and thus any differences we observe are truly by chance.
+
+***
+
+## Lecture17: Non-parametric test
+
+    * Non-parametric two-independent-sample test: Wilcoxon rank-sum test
+    * Non-parametric, two-paired-samples test: Wilcox signed-rank test
+    * Determining the sample size: `power.t.test()`
+
++ *Wilcoxon rank-sum test* is used to determine whether two independent samples are drawn from the same population.
++ *Wilcoxon signed-rank test* is used to determine whether two paired samples were drawn from the same population.
++ `Rank transformations`: Both the Wilcoxon rank sum test and the Wilcox signed-rank tests transform the original data using the rank transformation.
+    + recording the order of the data points instead of their values.
+
+### 0. Data
+Suppose we want to compare the length of hospital stay of patients with the same diagnosis at two diﬀerent hospitals.
+```{r}
+dataDF <- data.frame(days = c(21, 10, 32, 60, 8, 44, 29, 5, 13, 26, 33, 86, 27, 10, 68, 87, 76, 125, 60, 35, 73, 96, 44, 238), hospital = c(rep("hospitalA", 11), rep("hospitalB", 13)))
+
+boxplot(days ~ hospital, data = dataDF, outcol = NA)
+stripchart(days ~ hospital, vertical = T, data = dataDF, method = "jitter", add = T, pch = 20, col = 'blue')
+```
+
++ Use two-sample t-test with unequal variances? *No*
+    + there are outliers for hospitalB
+    + some skewness
+    + relatively small sample size
++ *This is the violation of assumptions for two-sample t-test*
+
+### 1. Wilcoxon rank-sum test
++ *Wilcoxon rank-sum test* is used to determine whether two independent samples are drawn from the same population.
+```{r}
+# Assumptions of Wilcoxon rank-sum test
+    # 1) two samples are independent
+    # 2) the data are ordinal
+
+# The hypotheses are: (Wilcoxon rank-sum test)
+    # H_0: the distributions of both populations are the same.
+    # H_a: the distributions of both populations are not the same.
+
+# The test
+dataDF <- dataDF %>% mutate(rank = rank(days))
+
+# test statitics: U statistic
+```
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy0xo10u4nj30jo05w3yw.jpg)
+
+```{r}
+dataDF %>% 
+    arrange(days) %>%
+    mutate(RANK=rank(days)) %>%
+    filter(hospital == "hospitalA") %>%
+    summarize(U = sum(RANK) - (length(RANK) * length(RANK+1)) / 2)
+# Can show that the sampling distribution of standardized U under the null is approximately standard normal
+
+# Use `wilcox.test()` function in R
+test <- wilcox.test(days ~ hospital, 
+                    data = dataDF, 
+                    conf.int = T,
+                    conf.level = 0.99)
+test$estimate %>% round
+test$conf.int %>% round
+test$p.value %>% round(3)
+
+# Conclusion: There is enough evidence that the distribution of length of stay differs between the two hospitals with the location of the length of stay in hospital A being 47 days less than in hospital B. (p-value = 0.002). In general, the hospital B's length of stay for patients appears longer than hospital A. (99% CI for the shift in location is from 8 to 81).
+```
+
+### 2. Wilcoxon signed-rank test
++ 이전의 Wilcox rank sum test는 two independent sample에서 sampling 한 두 그룹 X, Y를 비교한 것인데, 이 example은 하나의 sample에서 sampling하여 두 그룹으로 나눈 경우이기 때문에 서로 independent하지 않음 >>> 따라서 W. Rank-sum test를 사용할 수 없음 >>> 이런 경우에 Wilcox signed-rank test를 사용함
++ *Wilcoxon signed-rank test* is used to determine whether two paired samples were drawn from the same population.
+
+An instrument that is fairly common use in blood pressure epidemiology is the random-zero device, in which the zero point of the machine is randomly set with each use and the observer is not aware of the actual level of blood pressure at the time of measurement. The instrument is meant to reduce observer bias. Investigators *want to know that the readings of the random zero device are similar to a standard device Two measures were made on 20 children with both devices.* Suppose the observers were reluctant to assume that blood pressure is normally distributed. Note that the *data are paired*.
+```{r}
+apnea <- read.csv('apnea.csv')
+hist(apnea$average[which(apnea$group=="before")] - apnea$average[which(apnea$group=="after")], xlab="differences", ylab="density",col="lemonchiffon",freq=FALSE, main="histogram of differences", breaks = 'FD')
+# > These data are somewhat left skewed. Given the relatively small number of pairs, it is decided to do a signed-rank test.
+```
+
+```{r}
+# <Goal> to determine whether the average number of apnea events differs from before the treatment and after the treatment.
+
+# The hypotheses are: (Wilcoxon signed-rank test)
+    # H_0: there is no difference in the average number of apnea events per hour before and after treatment.
+    # H_a : there is a difference in the average number of apnea events per hour before and after treatment.
+
+# Wilcoxon signed-rank test
+test <- wilcox.test(average ~ group, data = apnea, paired=T, conf.int = T, conf.level = 0.99)
+test
+
+# Conclusion: There is enough evidence that there is a difference in the average number of apnea events per hour before and after treatment. It appears as though the treatment reduces the average number of apnea events per hour by 0.69.
+```
+
+### 3. Which test should I use?
+Since nonparametric tests make fewer assumptions than the t-test, one could be tempted to never use the t-test. However, it can be shown that *when the data are in fact normally distributed, the t-test has more power than nonparametric tests*.
+
+----
++ When testing the differences in *mean*:
+    + If the histogram of the data suggest that they are close to a *normal distribution* and/or *n is "large"*, use the `t-test`.
+    + If the data are very *far from the normal distribution* and *n is not large*, use the `non-parametric tests` (e.g., Wilcoxon rank-sum test OR Wilcoxon signed-rank test [paired data]).
++ When testing the differences in *other parameters*:
+    + Use the `permutation test`.
+
+----
+
+### 4. Determining sample size
+A study is being planned *to determine the effect of exogenous hormones on estradiol levels of post menopausal women*. Women will be recruited and randomized to *exogenous hormone treatment or placebo*. From a past study of exogenous hormones, it is known that the *SD* of estradiol levels in post menopausal women is *1.82 (pg/mL)*. How many participants need to be enrolled if the desired *minimum detectable difference is reduction of 0.75 *(∆ = −0.75) with *85% power* and a two-sided *α = 0.05*.
+```{r}
+# delta = 0.75
+# sd = 1.82
+# power = 0.85
+# alpha = 0.05
+# power.t.test(n = NULL, delta = NULL, sd = 1, sig.level = 0.05, power = NULL, type = c("two.sample", "one.sample", "paired"), alternative = c("two.sided", "one.sided"), strict = FALSE, tol = .Machine$double.eps^0.25)
+
+test <- power.t.test(delta = 0.55, sd = 1.82, power = 0.85, sig.level = 0.05)
+test$n %>% round # Note that this 107 is per group and we have two groups, treatment and placebo.
+
+test$n %>% round * 2 # Answer
+
+# ****If SD increases / power increases / Mdd(delta) decreases / level of significance(alpha) decreases, the required sample size would *increase*.
+```
+
+## Activity17
+No activity for lecture17.
+
+***
+
+## Lecture18: Comparison of Two or More Means (ANOVA)
+
+    * ANOVA with equal variances: `aov()`
+    * ANOVA with unequal variances: `Welch test` (`oneway.test`)
+    * Non-parametric test (non-normal distributions): `Kruskal-Wallis test` (`kruskal.test`)
+
++ Assumptions of ANOVA (t-test의 확장버전)
+    + the variances of the groups are the same.
+    + the data are from a normal distribution.
+    + the groups are independent.
++ Under the null hypothesis, F statistic ~ $F_{k-1,n-k}$ distribution.
+
+### 1. ANOVA with equal variances: `aov()`
+An experiment was conducted to examine the influence of avian panreatic polypeptide (aPP), cholecystokinin (CCK), vasoactive intestinal peptide (VIP) and secrtin o pancreatic and biliary secretions in laying hens. In particular, researhers were concerned with the extent to which these hormones increase or decrease biliary and pancreatic ﬂows and their pH values. We are asked *to compare the mean bilirubin secrection rates among the different groups*.
+
+```{r}
+hormone <- read.csv('hormone.csv')
+boxplot(Bilsecpt ~ Hormone, data = hormone, outcol = NA)
+stripchart(Bilsecpt ~ Hormone, vertical = T, data = hormone, method = "jitter", add = T, pch = 20, col = 'blue')
+```
+
+```{r}
+# Goal: to compare the mean bilirubin secrection rates among the different groups.
+
+# The hypotheses are: (ANOVA)
+    # H_0: mean biliary secrection rate of each groups is the same.
+    # H_a: at least one group mean biliary secretion rates differs.
+```
+$$H_0:\space \mu_1=\mu_2\cdots\mu_k=\mu\\H_a:\space At\space least\space one\space \mu_i\space differs$$
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy111s3w1wj30w20aamy8.jpg)
+```{r}
+# tSS = wSS + bSS
+# It measures how much error the data include.
+```
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy1139sbe6j30sg0ce3zq.jpg)
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy113nvdr4j30vc0j6gpw.jpg)
+
+```{r}
+# Total sums of squares (TSS)
+grandMean <- mean(hormone$Bilsecpt,na.rm=TRUE) 
+tss <- sum((hormone$Bilsecpt - grandMean)^2, na.rm=TRUE)
+tss
+
+# Within sums of squares (wSS) 한 그룹 내에서
+meanSaline <- mean(hormone$Bilsecpt[which(hormone$Hormone=="saline")], na.rm=TRUE) 
+meanaPP <- mean(hormone$Bilsecpt[which(hormone$Hormone=="aPP")], na.rm=TRUE) 
+meanCCK <- mean(hormone$Bilsecpt[which(hormone$Hormone=="CCK")], na.rm=TRUE) 
+meanSecretin <- mean(hormone$Bilsecpt[which(hormone$Hormone=="secretin")], na.rm=TRUE) 
+meanVIP <- mean(hormone$Bilsecpt[which(hormone$Hormone=="VIP")], na.rm=TRUE)
+
+wssSaline <- sum((hormone$Bilsecpt[which(hormone$Hormone=="saline")] - meanSaline)^2, na.rm=TRUE) 
+wssaPP <- sum((hormone$Bilsecpt[which(hormone$Hormone=="aPP")] - meanaPP)^2, na.rm=TRUE) 
+wssCCK <- sum((hormone$Bilsecpt[which(hormone$Hormone=="CCK")] - meanCCK)^2, na.rm=TRUE) 
+wssSecretin <- sum((hormone$Bilsecpt[which(hormone$Hormone=="secretin")] - meanSecretin)^2, na.rm=TRUE) 
+wssVIP <- sum((hormone$Bilsecpt[which(hormone$Hormone=="VIP")] - meanVIP)^2, na.rm=TRUE)
+
+wSS = wssSaline + wssaPP + wssCCK + wssSecretin + wssVIP 
+wSS
+
+# Between sums of squares (bSS) 그룹 간 에러
+nSaline = sum(hormone$Hormone=="saline") -  sum(is.na(hormone$Bilsecpt[which(hormone$Hormone=="saline")])) 
+naPP = sum(hormone$Hormone=="aPP") -  sum(is.na(hormone$Bilsecpt[which(hormone$Hormone=="aPP")])) 
+nCCK = sum(hormone$Hormone=="CCK") - sum(is.na(hormone$Bilsecpt[which(hormone$Hormone=="CCK")])) 
+nSecretin = sum(hormone$Hormone=="secretin") - sum(is.na(hormone$Bilsecpt[which(hormone$Hormone=="secretin")])) 
+nVIP = sum(hormone$Hormone=="VIP") - sum(is.na(hormone$Bilsecpt[which(hormone$Hormone=="VIP")])) 
+
+bSS <- nSaline * (meanSaline-grandMean)^2 + naPP*(meanaPP-grandMean)^2 + nCCK*(meanCCK-grandMean)^2 + nSecretin*(meanSecretin-grandMean)^2 + nVIP*(meanVIP-grandMean)^2 
+bSS
+
+# Check the calculation
+tss
+wSS + bSS
+
+# bMS and wMS (k = # of groups)
+    # between Mean Squares (bMS) = bSS / (k - 1)
+bMS <- bSS / (length(unique(hormone$Hormone)) - 1)
+bMS
+    # within Mean Sqares (wMS) = wSS / (n - k)
+wMS <- wSS / ((nrow(hormone) - sum(is.na(hormone$Bilsecpt))) - (length(unique(hormone$Hormone)) - 1))
+wMS
+
+# F-statistic (F = bMS / wMS)
+    # Fstat has a F_{df1 = k-1, df2 = n-k} = F_4133 distribution
+Fstat <- bMS / wMS
+Fstat
+
+# p-value (using `pf()`)
+p.val <- 1- pf(Fstat, length(unique(hormone$Hormone)) - 1, nrow(hormone) - sum(is.na(hormone$Bilsecpt)))
+p.val %>% round(4)
+
+# Conclusion: There is enough evidence that there is a difference in the mean bilirubin secretion levels among the different treatment gorups (p-value = 0.0095). It appears as though the aPP treatment group has a decreased mean bilirubin secretion rate compared to the means of the other groups. There are considerable smaller differences among the mean bilirubin secretion rates of the other groups except aPP treatment gorup.
+
+boxplot(Bilsecpt ~ Hormone, data = hormone, outcol = NA)
+stripchart(Bilsecpt ~ Hormone, vertical = T, data = hormone, method = "jitter", add = T, pch = 20, col = 'blue')
+```
+
++ Using `aov()` function in R
+```{r}
+test <- aov(Bilsecpt ~ Hormone, data=hormone)
+test %>% summary
+# > between sums of squares (bSS) = 2663.707
+# > df under Hormone = k - 1 = 5 - 1 = 4
+length(unique(hormone$Hormone)) - 1
+# > within sums of squares (wSS) = 24586.202
+# > df under Residuals = n - k = 142 - 9(missing values) - 4 = 129 (128)
+((nrow(hormone) - sum(is.na(hormone$Bilsecpt))) - (length(unique(hormone$Hormone)) - 1))
+
+```
+
+### 2. ANOVA with unequal variances: `Welch test` (`oneway.test`)
+```{r}
+# What if we assume that we do not have equal variances?
+# `Welch test`: the generalization of the two-sample t-test *assuming unequal variances* 
+# Use `oneway.test()` in R 
+
+test <- oneway.test(Bilsecpt ~ Hormone, data = hormone)
+test
+
+# Conclusion: There is enough evidence that there is a difference in the mean bilirubin secrection rates levels among the different treatment groups (p-value < 0.0001). It appears as though that the aPP treatment group has a smaller mean bilirubin secretion rate compared the other groups.
+```
+
+----
++ When testing the differences in *mean*:
+    + If the histogram of the data suggest that they are close to a *normal distribution* and/or *n is "large"*, use the `t-test`.
+    + If the data are very *far from the normal distribution* and *n is not large*, use the `non-parametric tests` (e.g., Wilcoxon rank-sum test OR Wilcoxon signed-rank test [paired data]).
++ When testing the differences in *other parameters*:
+    + Use the `permutation test`.
+
+----
+
+### 3. Non-parametric test (non-normal distributions): `Kruskal-Wallis test` (`kruskal.test`)
++ Assumptions of ANOVA (t-test의 확장버전)
+    + the variances of the groups are the same.
+    + the data are from a normal distribution.
+    + the groups are independent.
++ Under the null hypothesis, F statistic ~ $F_{k-1,n-k}$ distribution.
+
++ *What if we assume that the data are not from a normal distribution?*
+    + `Kruskal-Wallis test`: the generalization of two-sample Wilcoxon rank-sum test. (`kruskal.test`)
+
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy13jbd2ugj30b009vjrd.jpg)
+
+```{r}
+boxplot(Bilsecpt ~ Hormone, data = hormone, outcol = NA)
+stripchart(Bilsecpt ~ Hormone, vertical = T, data = hormone, method = "jitter", add = T, pch = 20, col = 'blue')
+```
+
+```{r}
+# The hypotheses are: (Kruskal-Wallis test)
+    # H_0: the distributions of the pancreatic secretion rates across the treatment groups are the same.
+    # H_a: at least one distribution of the pancreatic secretion rates differs among the treatment groups.
+
+test <- kruskal.test(Bilsecpt ~ Hormone, data = hormone)
+test
+# Kruskal-Wallist test has Chi-squared distribution as a sampling distribution.
+
+# Conclusion: It appears as though there is a diﬀerence among in the pancreatic secretion rates among the diﬀerent treatment groups (Kruskal-Wallis p-value = 0.0069. In particular, it appears as though the values in the aPP, CCK, and VIP groups are lower than that of the saline and secretin groups.
+```
+
+> + ANOVA works best when there are equal numbers of observations in each group.
+> + Under the equal variances, ANOVA has more power power than the Welch Test.
+> + A non-parametric test should be used when there is a clear violation of the normality assumption such as outliers or extreme skewness. (violation = small sample size)
+> + If the sample sizes are quite large, then deviations from normality are of less concern due to the central limit theorem that suggests that the sampling distribution of the means become approximately normal.
+
+## Activity18
+Intake of high doses of beta-carotene in food has been associated in some observational studies with a decreased incidence of cancer. A clinical trial was planned comparing the incidence of cancer in a group taking beta-carotene in capsule form compared with a group taking beta-carotene placebo capsules. One issue in planning the trial was which preparation to use for the beta-carotene capsules. Four preparations were tested (1) solatene (s), (2) Roche (r), (3) Badische Anilin und Soda Fabrik, BASF (b1), and (4) another version of a BASF capsule (b2). To test eﬃcacy of the four preparations in raising plasma beta-carotene levels, a small bioavailability study was conducted. After two consecutive-day fasting blood samples, 23 volunteers were randomized to one of the four groups. The primary endpoint was the level of plasma beta-carotene attained after moderately prolonged steady ingestion. For this analysis, we will compare the diﬀerences in baseline values (`base1lvl`) and those at 6 weeks (`wk6lvl`) among the four groups. The data are in `BETACAR.csv`.
+
+Data definitions:
++ `Prepar`: the capsule group to which the individual was randomized
++ `Id`: subject ID number
++ `base1lvl`: baseline beta-carotene level
++ `wk6lvl`: six-week beta-carotene level
+
+```{r}
+dat_betaCar <- read.csv("BETACAR.csv") %>%
+    mutate(diff = wk6lvl - base1lvl)
+```
+
+We want *to test whether the mean difference in beta-carotene levels differ among the four different groups using a α = 0.05.*
+
+<Question1: Analysis of beta-carotene>
+For the analysis, you need to get the difference between the baseline and six-week value since this is what we will use for the analysis. (If possible, best to use `mutate` function.)
+```{r}
+# The hypotheses are:
+    # H_0: Mean changes in betacarotene levels are the same across all four groups.
+    # H_a: Mean changes in betacarotene levels are different in at least two groups.
+
+# Make side-by-side boxplots.
+dat_betaCar %>% 
+    ggplot(aes(x=Prepar, y=diff, fill=Prepar)) +
+    geom_boxplot(outlier.color = NA) +
+    geom_jitter(height=0, width=.1) +
+    guides(fill=FALSE) +
+    labs(x = "Preparation",
+         y="Change in Betacarotene")
+```
+
++ $$\bar{\bar{y}}=grand\space mean$$
+```{r}
+# What is the grand mean of all the differences?
+dat_betaCar %>% summarise(GrandMean = mean(diff) %>% round(1))
+
+# What is the mean of each of the four diﬀerent groups?
+dat_betaCar %>% group_by(Prepar) %>% summarise(GroupMean = mean(diff) %>% round(1))
+
+# What is the total sums of squares (TSS)?
+test <- aov(diff ~ Prepar, data = dat_betaCar)
+library(broom)
+TSS <- tidy(test)$sumsq %>% sum
+TSS
+
+# What is the within sums of squares (wSS)?
+wSS <- tidy(test)$sumsq[2]
+wSS
+
+# What is the between sums of squares (bSS)?
+bSS <- tidy(test)$sumsq[1]
+bSS
+
+# What is the within mean sum of squares (wMS)?
+wMS <- tidy(test)$sumsq[2] / tidy(test)$df[2]
+wMS
+
+# What is the between mean sum of squares (bMS)?
+bMS <- tidy(test)$sumsq[1] / tidy(test)$df[1]
+bMS
+
+# What is the value of the test statistic, F?
+F_stat <- bMS / wMS
+F_stat
+
+# What what is the p-value?
+1 - pf(F_stat, tidy(test)$df[1], tidy(test)$df[2])
+
+# Conclusion: Using an ANOVA test assuming equal variances, there is no evidence that the mean change from baseline to week six in betacarotene differs across any of the four preparations (p-value = 0.349).
+```
+
+<Question2: ANOVA assuming equal variances (`aov`)>
+```{r}
+aov(diff ~ Prepar, data=dat_betaCar) %>% summary()
+# The conclusion is the same: Using an ANOVA test assuming equal variances, we do not have evidence that the mean change from baseline to week six in betacarotene differs across any of the four preparations (p-value = 0.349 aov).
+```
+
+<Question3: ANOVA assuming unequal variances (Welch test, `oneway.test`)>
+```{r}
+oneway.test(diff ~ Prepar, data=dat_betaCar)
+
+# What is the p-value?
+# > p-value is 0.418.
+
+# How does the p-value obtained from oneway.test compare to that from aov?
+# > The p-value from the oneway.test was slightly larger (0.418) than that assuming equal variances (p=0.349). However, the conclusion does not change.
+
+# What is your conclusion regarding whether there are diﬀerences among the mean changes from baseline to week 6?
+# > The conclusion is the same: Using an ANOVA test assuming equal variances, we do not have evidence that the mean change from baseline to week six in betacarotene differs across any of the four preparations (p-value = 0.418 Welch test).
+```
+
+<Question 4: Kruskal-Wallis test>
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy14qj7rjuj312805qmz0.jpg)
+```{r}
+lungData <- readxl::read_excel('lung.xlsx')
+lungData %>% 
+    ggplot(aes(x=lungFunction, y=reactivity)) +
+    geom_dotplot(binaxis='y', stackdir='center') +
+    stat_summary(fun.y=mean, geom="point",
+                 shape=18, size=3, color="red")
+```
+
+```{r}
+# <Logic of Kruskal-Wallis instead of ANOVA>
+
+# Would you be concerned performing a traditional ANOVA (equal variances) or an ANOVA with unequal variances? 
+# > Since the grups seem to 
+    # 1) have large difference in variance, 
+    # 2) and the sample size differs across groups, 
+    # 3) and there is a clear outlier, 
+# the assumptions for an ANOVA are not met, so I would prefer to do a `Kruskal-Wallis test`.
+
+# Kruskal-Wallis test
+kruskal.test(reactivity ~ as.factor(lungFunction), data = lungData)
+
+# Conclusion: Using a significance level of alpha = 0.10, there is no evidence that reactivity is not the same across lung function groups (p-value = 0.073 Kruskal-Wallis test). From our boxplots, it appears as though, poor lung function group had high reactivity while good and moderation lung function groups hae similar reactivity values.
+```
+
+***
+
+## Lecture19: Correlation
+
+    * Correlation Coefficient
+    * Population Correlation
+    * Sample Correlation
+    * Correlation is NOT causation
+    * Assumptions for correlation (Assumptions for Pearson correlatin) ****
+
+A group of 10-year-old boys were first ascertained in a camp for diabetic boys. The had their weight measured at baseline and again when they returned to camp 1 year later. Each time, a serum sample was obtained from which a determination of hemoglobin A1c (HgbA1c) was made. HgbA1c is routinely used to monitor compliance with taking insulin injections. Usually, the poorer the compliance, the higher the HgbA1c level will be. The hypothesis is that the level HgbA1c (%) is related to weight (kg).
+```{r}
+diabetesData <- read.csv('diabeticBoys.csv')
+# Scatterplot
+ggplot(data = diabetesData, aes(x = weightBase, y = hgba1cBase)) + geom_point() + theme_classic() + ggtitle("Baseline Values")
+```
+
++ Is there a relationship between weight and HgbA1c level at baseline?  
+
+
+### 1. Correlation Coefficient
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy1ht55japj30mc04owex.jpg)
+
+### 2. Population correlation
++ a meqsure of (linear) relatedness of two variables
++ independent of units
++ correlation coefficient
+$$\rho=Corr(X, Y)=\frac{Cov(X,Y)}{\sigma_x\sigma_y}\\Cov(X,Y)=E\left[(X-\mu_x)(Y-\mu_y\right]=E(XY)-\mu_x\mu_y$$
++ dimensionless quantity
++ it is independent of the units of X and Y
++ ranges between -1 and 1
++ $\rho$ near 0: independence or no relationship
++ $\rho$ close 1: nearly perfect positive dependence
++ $\rho$ close to -1: nearly perfect negative dependence
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy1hte9texj30xg0kcdlm.jpg)
+
+### 3. Sample correlation
+$$r = \frac{s_{xy}}{s_x s_y}=\frac{cov(x,y)}{sd(x)\cdot sd(y)}in\space R$$
+```{r}
+# sample corr estimate: manual
+rEst <- cov(diabetesData$weightBase, 
+            diabetesData$hgba1cBase) / (sd(diabetesData$weightBase) * sd(diabetesData$hgba1cBase))
+rEst %>% round(3)
+
+# sample corr estimate: `cor()` function in R
+rEst <- cor(diabetesData$weightBase,diabetesData$hgba1cBase) 
+rEst %>% round(3)
+
+# The hypothese are: (correlation coefficient)
+    # H_0: (\rho=0) No correlation between the variables.
+    # H_a: (\rho \ne 0) There is a relationship between the variables.
+
+# (In this example) The hypothese are:
+    # H_0: there is no relationship between weight and Hgb1Ac at baseline (ρ = 0) H
+    # H_a: there is a relationship between weight and Hgb1Ac at baseline (ρ \ne 0)
+
+# test statistic
+```
+$$t=\frac{r\sqrt{n-2}}{\sqrt{1-r^2}}\\with\space t_{n-2}\space under\space the\space null\space hypothesis$$
+```{r}
+# test statistic (cont'd)
+n <- nrow(diabetesData) 
+tStat <- (rEst * sqrt(n-2)) / sqrt(1-rEst^2) 
+tStat %>% round(3)
+
+# p-value = 2 X (area to the right of |t| under a t_{n-2} distribution)
+p.val <- 2 * (1 - pt(abs(tStat), n - 2))
+p.val %>% round(3)
+
+# Conclusion: There is no evidence that there is a (linear) relationship between the baseline weight of adolescent boys with diabetes and baseline HgbA1c levels (p-value = 0.57)
+
+# `cor.test()` in R
+test <- cor.test(diabetesData$weightBase,
+                 diabetesData$hgba1cBase,
+                 conf.level = 0.99)
+test
+
+# 99% CI
+test$conf.int %>% round(3)
+
+# Conclusion: There is no evidence that there is a (linear) relationship between the baseline weight of adolescent boys with diabetes and baseline HgbA1c levels because 99% CI, -0.526 to 0.718, contains 0 (p-value = 0.5748).
+```
+
+### 4. Correlation is NOT causation
++ significant correlation necessary for causation (assuming sufficient power)
++ significant correlation NOT sufficient for causation
+
+### 5. Assumptions for correlation (Assumptions for Pearson correlatin) ****
++ sampling from normal distributions 
++ underlying relationship is linear 
++ homoskedasticity 
+
+## Activity19
+A group of 10-year-old boys were ﬁrst ascertained in a camp for diabetic boys. The had their weight measured at baseline and again when they returned to camp 1 year later. Each time, a serum sample was obtained from which a determination of hemoglobin A1c (HgbA1c) was made. HgbA1c is routinely used to monitor compliance with taking insulin injections. Usually, the poorer the compliance, the higher the HgbA1c level will be. The hypothesis is that the level HgbA1c (%) is related to weight (kg). The data are in diabeticBoys.csv.
+
+Is there a relationship between the change in weight and change in HgbA1c values, with the change being from baseline to one year? Use a significance level of α = 0.025.
+
+Data definitions:
++ `id`: subject ID number
++ `weightBase`: weight (kg) at baseline
++ `hgba1cBase`: HgbA1c (%) at baseline
++ `weight1yr`: weight (kg) at 1 year
++ `hgba1c1yr`: HgbA1c (%) at 1 year
+
+We want *to test whether there is a relationship in the change in weight (baseline to 1 year) and the change in HgbA1c (baseline to 1 year)*.
+
+```{r}
+dat_diabetes <- read.csv("diabeticBoys.csv") 
+dat_diabetes <- dat_diabetes %>%
+    mutate(weightChange = weight1yr - weightBase,
+           hgba1cChange = hgba1c1yr - hgba1cBase)
+
+# Check for missing values 
+dat_diabetes <- dat_diabetes %>% filter(!is.na(weightChange) | !is.na(hgba1cChange))
+```
+
+<Question1: Analysis of changes in weight and HgbA1c>
+```{r}
+# The hypotheses are:
+    # H_0: There is no (lienar) relationship in the change in weight (baseline to 1 year) and the change in HgbA1c (baseline to 1 year).
+    # H_0: There is a (linear) relationship in the change in weight (baseline to 1 year) and the change in HgbA1c (baseline to 1 year).
+
+# Scatterplot of the change in HgbA1c and change in weight (baseline to 1 year).
+dat_diabetes %>%
+    ggplot(aes(x=weightChange, y=hgba1cChange)) +
+    geom_point() + theme_classic(base_size=13) +
+    labs(title = "1 year changes",
+         x = "Weight change (kg)",
+         y = "HgbA1c change (%)")
+```
+
+```{r}
+# What is the value of the sample correlation for the change in weight and the change in HgbA1c value?
+cor(dat_diabetes$weightChange, dat_diabetes$hgba1cChange)
+
+# What is the value of the test statistic computed in two ways.
+    # sample corr estimate: manual
+rEst <- cov(dat_diabetes$weightChange, 
+            dat_diabetes$hgba1cChange) / (sd(dat_diabetes$weightChange) * sd(dat_diabetes$hgba1cChange))
+    # test statistic
+n <- nrow(dat_diabetes) 
+tStat <- (rEst * sqrt(n-2)) / sqrt(1-rEst^2) 
+tStat
+
+    # sample corr estimate: `cor()` function in R
+rEst <- cor(dat_diabetes$weightChange,dat_diabetes$hgba1cChange) 
+    # test statistic
+n <- nrow(dat_diabetes) 
+tStat <- (rEst * sqrt(n-2)) / sqrt(1-rEst^2) 
+tStat
+
+# Under the null hypothesis, what is the sampling distribution for the test statistic?
+df <- nrow(dat_diabetes) - 2
+df
+# > Under the null hypothesis, the t-statistic is distributed as a T with n-2=13 degrees of freedom.
+
+# p-value = 2 X (area to the right of |t| under a t_{n-2} distribution)
+p.val <- 2 * (1 - pt(abs(tStat), n - 2))
+p.val %>% round(3)
+
+# Conclusion: With an alpha level of 0.025, there is no evidence of a negative linear association between change in height and weight (p-value = 0.032).
+```
+
+<Question2: Test of hypothesis using `cor.test`>
+```{r}
+# Use cor.test to test the hypothesis of whether there is a relationship between the change in weight and the change in Hgb1Ac levels.
+test <- cor.test(dat_diabetes$weightChange,
+                 dat_diabetes$hgba1cChange,
+                 conf.level = 0.99)
+test$statistic
+test$p.value
+```
+
+<Question3: Confidence Interval (CI)>
+```{r}
+# What is the point estimate for the correlation between the change in weight and the change in Hgb1Ac (between baseline and one year)?
+test$estimate
+
+# Report a 99% confidence interval (CI) for the correlation between the change in weight and the change in Hgb1Ac (between baseline and one year)?
+test$conf.int[c(1,2)]
+
+# Based on the confidence interval (CI), what is your conclusion regarding whether there are diﬀerences among the mean changes from baseline to week 6?
+# > Since the 99% CI contains 0, there is no evidence at the alpha = 0.01 level that there is a linear association between change in weight and the change in Hgb1Ac (between baseline and 1 year).
+```
+
+***
+
+## Lecture20: Linear Regression
+----
+A baby's weight at birth may depend on many variables, including the gestation period, the height and weight of the mother and of the father.
+```{r}
+library(UsingR) 
+data("babies") 
+dat_babies <- babies %>% 
+    rename(wt_baby = wt, wt_mom = wt1) %>%
+    mutate(wt_baby = ifelse(wt_baby == 999, NA_real_,wt_baby),
+           wt_mom = ifelse(wt_mom == 999, NA_real_,wt_mom),
+           age = ifelse(age == 99, NA_real_,age))
+dat_babies <- dat_babies %>% 
+    filter(!is.na(wt_baby) & !is.na(wt_mom) & !is.na(age)) %>%
+    filter(pluralty == 5)
+```
+
++ Is there a relationship between the mother's weight and the weight of baby?
+----
+
+### 1. Linear regression line
++ Linear regression line
+determine the "best" line that describes the relationship.
+    + *"best"* means the *line that minimizes the sum of squared distances*.
+```{r}
+fit <- lm(wt_baby ~ wt_mom, data = dat_babies)
+ggplot(dat_babies, aes(x = wt_mom, y = wt_baby)) +
+    geom_point() +
+    geom_abline(intercept = coef(fit)[1],
+                slope = coef(fit)[2],
+                col = 'red', size = 1) +
+    theme_classic()
+```
+
+### 2. Sums of squares
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fy1m2syzjnj30vk0cowfx.jpg)
+
+### 3. Solve
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy1m38tn0oj30qc0nojte.jpg)
+
+### 4. Definitions:
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy1m4niohrj30se0b2mz2.jpg)
+```{r}
+fit <- lm(wt_baby ~ wt_mom, data = dat_babies)
+
+# intercept
+fit$coefficients[1]
+
+# slope
+fit$coefficients[2]
+
+# fitted values
+fit$fitted.values %>% round(3) %>% head
+    # > check:
+fit$coefficients[1] + fit$coefficients[2] * dat_babies$wt_mom[1:6]
+    # > ****the mean of the fitted values = the mean of the observed values
+mean(fit$fitted.values) == mean(dat_babies$wt_baby)
+
+# residual values 
+# (= real y value - y value predicted by the line)
+fit$residuals %>% round(3) %>% head
+    # > check:
+dat_babies$wt_baby[1:6] - (fit$coefficients[1] + fit$coefficients[2] * dat_babies$wt_mom[1:6])
+    # > ****the sum of residuals = 0
+sum(fit$residuals) %>% round(5)
+
+# relationship between slope and correlation coefficient
+fit$coefficients[2] %>% round(3)
+(cor(dat_babies$wt_mom, dat_babies$wt_baby) * (sd(dat_babies$wt_baby)/sd(dat_babies$wt_mom))) %>% round(3)
+    # > test for a relationship based on r will yield the same results test on relationship for β
+summary(fit)$coefficient[2,3] == summary(fit)$coefficient[2,1]/summary(fit)$coefficient[2,2]
+```
+
+### 5. Variance Explained: R-squared
++ *R-squared coefficient*: the proportion of variation in y explained by the regression line(i.e., y-hat)
+    + large R-squared: the linear model is good for explaining y using x
+    + small R-squared: the linear model is poor for explaining y using x
+    
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy1qx2k1bdj30om0ds40i.jpg)
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy1mj5mb58j30ra0dodgz.jpg)
+
++ 보라색 부분 / 전체(노랑색 부분+보라색 부분) = $R^2$
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy1qymx2voj30jl0jbabn.jpg)
+
+### 6. Inference for regression
+1) Correlation vs. Regression
++ Advantages of Regression over Correlation
+    + The values of x can be used to predict y 
+    + The analysis is not limited to linear association, but includes polynomial dependencies
+    + The analysis is not limited to two variables and regression can be used to study the effects of many covariates on the response
+
+2) Inference
++ Variable of most importance in regression: $\beta$ (the slope)
++ Intercept often does not make sense if not through 0
++ To do inference, *need the estimate and the sampling distribution of the estimate*.
+
+3) model
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fy1r3bzt6zj30ic07zjsc.jpg)
+
+4) Assumptions of linear regression (for inference / estimation)
++ E(Y|X) is linear 
++ For each X, the normal Y distribution has the same variance (homoskedasticity)
++ For each X, the Y distribution is normal (less important for large samples because the CLT works).
+
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy1r4vp182j30lx0fxq5w.jpg)
+
+5) Estimate for slope
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fy1r5j5s6oj30gj09ot9l.jpg)
+
+6) test statistic for linear regression (slope)
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fy1r6i19mij30jz0510tb.jpg)
+
+7) The hypotheses are: (linear regression)
++ $H_0$: ($\beta=0$) There is no (linear) relationship between two variables.
++ $H_a$: ($\beta\ne0$) There is a relationship between the two variables.
++ *test statistic of linear regression*: test statistic under the null hypothesis (Under the null hypothesis $\beta=0$)
++ *p-value of linear regression*: from $t_{n-2}$ distribution
+
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy1r9k9448j30mz05rjs6.jpg)
+
+```{r}
+# The hypotheses are: (linear regression)
+    # H_0: (\beta=0) mom weight and baby weight are not related (or are not associated)
+    # H_a: (\beta \ne 0) mom weight and baby weight are related (or are associated)
+fit <- lm(wt_baby ~ wt_mom, data = dat_babies)
+
+# test statistic (t-statitic)
+summary(fit)$coefficients[2,3]
+    # > manual:
+summary(fit)$coefficients[2,1] / summary(fit)$coefficients[2,2]
+
+# p-value from t-distribution with df = n-2
+summary(fit)$coefficients[2,4] 
+    # > manual:
+n <- nrow(dat_babies)
+2 * (1 - pt(summary(fit)$coefficients[2,3], n - 2))
+
+# Conclusion: There is enough evidence that there is a (linear) relationship between mom weight and baby weight (p-value < 0.0001). The relationship appears to be positive with one unit change in mom's weight associated with a 0.135 unit change in baby's weight on average.
+
+# 90% CI
+confint(fit, 'wt_mom', level = 0.90)
+    # > manual: 
+lb <- summary(fit)$coefficients[2,1] - qt(0.95, n - 2) * summary(fit)$coefficients[2,2]
+ub <- summary(fit)$coefficients[2,1] + qt(0.95, n - 2) * summary(fit)$coefficients[2,2]
+lb; ub
+
+# Conclusion: The estimate of the association between mom weight and baby weight is 0.135(estimate of slope) with 90% CI from 0.094 to 0.176. Since the CI does not contain 0, there is enough evidence that there is a significant positive (linear) reltionship at a alpha = 0.10 level.
+
+# linear regression 식 & R-suqared
+summary(fit)$r.squared
+# > The proportion of variation explained in baby weights by knowing the gestation time and using the equation is`baby weight`= 102.1434 + 0.1349 x `mom weight` is 2.38% (R-squared)
+```
+
+### 7. Slope interpretation
++ Recall, that the slope of a regression line indicates the average change in Y for a one unit change in X
++ Perfect linear relatonship has a correlation of 1 or -1; however, slope can be any positive value for a positive relationship or any negative value for a negative relationship
++ A slope of one (or minus one) *does not mean* the correlation will be 1 (or minus one)
+
+## Activity20
+
+<Question1: Variation in lines>
+$$y = 10-2x + e\\where\space \varepsilon\space\sim N(0,5)$$
+
+```{r}
+# Take a random sample of 100 from this population using the code below.
+x1 <- sample(seq(from=1, to=20, by=0.1), 100, replace = T)
+y1 <- 10 - 2 * x1 + rnorm(100, 0, 5)
+fit1 <- lm(y1 ~ x1)
+
+# Repeat the simulation and line fitting 4 more times, saving the fit of each line.
+y2 <- 10 - (2*x1) + rnorm(100, 0, 5) 
+y3 <- 10 - (2*x1) + rnorm(100, 0, 5) 
+y4 <- 10 - (2*x1) + rnorm(100, 0, 5) 
+y5 <- 10 - (2*x1) + rnorm(100, 0, 5)
+
+# Plot
+plot(x1, y1, type="n", xlab='x', ylab='y') 
+abline(lm(y1 ~ x1)) 
+abline(lm(y2 ~ x1)) 
+abline(lm(y3 ~ x1)) 
+abline(lm(y4 ~ x1)) 
+abline(lm(y5 ~ x1))
+# > Linear regression line keeps changing from sample to sample, as the sample changes.
+```
+
+<Question2: Examine the relationship between the baby's weight and the mother pregnanacy weight.>
+```{r}
+# predict the baby's weight based on the mother's pregnancy weight. Make a scatterplot of the data.
+fit <- lm(wt_baby ~ wt_mom, data = dat_babies)
+ggplot(dat_babies, aes(x = wt_mom, y = wt_baby)) +
+    geom_point() +
+    geom_abline(intercept = coef(fit)[1],
+                slope = coef(fit)[2],
+                col = 'red', size = 1) +
+    theme_classic()
+# > The relationship between a mother's weight and the baby's weight seems linear, though not very strong.
+
+# What is the value of the sample correlation for the relationship between mother's pregancy weight and baby's weight?
+test <- cor.test(dat_babies$wt_mom, dat_babies$wt_baby)
+test$conf.int[c(1,2)] %>% round(3)
+# > The sample correlation between a mom's weight and the baby's weight is 0.154. The 95% CI for the true correlation is 0.098 to 0.209
+
+# What would the predicted weight be for a baby for a mother with a pregnacy weight of 130 pounds?
+(fit$coefficients[1] + fit$coefficients[2] * 130) %>% round(2)
+predict(fit, newdata = data.frame(wt_mom = 130), interval = 'prediction', conf.level = 0.95)[1] %>% round(2)
+
+# What would be the average change in a baby's weight for a one pound DECREASE in mother's pregnancy weight?
+# > Since the estimate of the slope is 0.1349, if there is one pound(unit) DECREASE in mother's weight, we would predict that the baby would be 0.1349 ounces(unit) less heavy.
+
+# Perform a hypothesis test for whether there is an association between mother's pregnancy weight and the baby's weight (test the slope).
+    # The hypotheses are: (linear regression)
+        # H_0: (beta=0) There is no (linear) relationship between mom's weight and baby's wegiht.
+        # H_a: (beta\ne 0) There is a (linear) relationship between mom's weight and baby's wegiht.
+summary(fit)$coefficients[2,4]
+
+# Conclusion: Using the t-statistic we can test for an association between a mother's weight and the baby's weight. From this study we do have evidence of an association, where on average an additional pound that the mother weight is associated with an additional 0.13 ounces in the baby's weight (p < 0.0001).
+```
+
+<Question3: Confidence interval (CI)>
++ between `mom's age` and `baby's weight`
+```{r}
+# Goal: whether baby's weight is related to mother's age
+dat_babies %>% 
+    ggplot(aes(age,wt_baby)) +
+    geom_point() +
+    labs(title="Age vs Baby Weight", 
+         x="Mother's age (yrs)",
+         y="Baby's wwight (ounces)") +
+    theme_classic()
+# > There does not seem to be a strong relationship between a mother's age and the weight of the baby. A line would likely fit well, but it would be a flat line.
+
+# Point estimate of the association (slope of the line)
+fit <- lm(wt_baby ~ age, data = dat_babies)
+summary(fit)
+# > The point estimate for the association is an increase in the baby's weight of 0.114 ounces(unit) for every year older that the mother is.
+
+# 99% CI of the association (slope of the line)
+confint(fit, 'age', level = 0.99) %>% round(3)
+# > The 99% CI for this association is between 0.121 ounces less to 0.35 ounces more for every additional year older the mother is.
+
+# Conclusion: Since the 99% CI for the slope (association) contains 0, we do not have evidence at the 1% alpha level that the mother's age is associated with the weight of the baby.
+```
+
+***
+
+## Lecture21: Linear Regression Diagnostics
+### 1. Linear Regression assumptions
++ Assumptions of linear regression
+![](https://ws2.sinaimg.cn/large/006tNbRwly1fy1tskm85wj30m607tgn6.jpg)
+
+### 2. Model diagnostics: *residual plot*
+1) method: *scatterplot* / *residual plots (with x values)* / *residual plots (with y-hat)* / *normal Q-Q plot*
++ Check the scatterplot
++ Check the residual plots
+    + Because residual plots magnify any deviations: curvature, heteroskedasticity
++ Two flavors:
+    + <1> residuals as function of x values
+    + <2> residuals as a function of fitted valeus (y-hat)
+
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy1tzt0j30j30mo0fe41m.jpg)
+
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy1u0awzc6j30n90gwabt.jpg)
+
+2) interpretation of diagnostic plots (Checkpoints)
+If the model meets all conditions above, we could say that 'Model appears adequate.'
+    
+    + points appear randomly scattered 
+    + no obvious curvature (so linearity appears to be met)
+    + no obvious heteroscedasticity 
+    + residuals appear normally distributed
+
+### 3. Influential points & Outliers
++ Unusual points: influential points and outliers
+
+1) *Influential point*(small residual value,평균과의 x-좌표 차이가 큰 편)
++ is unusual point that has considerable impact on the line
+    + typically has small residual value
+    + typically separated from other points with respect to the x value
+
+2) *Outlier* (large residual value, 평균과의 x-좌표 차이가 크지않음)
+    + typically has large residual value 
+    + typically has x value in the midst of the x value range
+
+![](https://ws3.sinaimg.cn/large/006tNbRwly1fy1u85lqa7j30me08bdh5.jpg)
+
+### 4. F-test for slope
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy1qx2k1bdj30om0ds40i.jpg)
+![](https://ws4.sinaimg.cn/large/006tNbRwly1fy1unlzoxij30e205174r.jpg)
+![](https://ws1.sinaimg.cn/large/006tNbRwly1fy1umqrv9cj30e8055jrv.jpg)
+
++ For univariate linear regression, k = 1:
+    + RegMS = RegSS / k >>> RegMS = RegSS
+    + ResMS = ResSS / (n-k-1) >>> ResMS = ResSS / (n-2)
+    + *F-stat* = RegMS / ResMS (*test statitic*)
+
++ The hypotheses are: (F-test)
+    + H_0 : ($\beta=0$) There is no relationship between two variables.
+    + H_a : ($\beta\ne 0$) There is a relationship between two variables.
+
++ p-value: from a $F_{1,n-2}$ distribution
+
+```{r}
+# The hypotheses are:
+    # H_0: (\beta = 0) There is no relationship between mom weight and baby weight.
+    # H_a: (\beta \ne 0) There is a relationship between mom weight and baby weight.
+
+test <- aov(wt_baby ~ wt_mom, data = dat_babies)
+test %>% summary
+# F-statitic = 29.13
+# p-value from F distribution with df = 1 and 1197: 8.17e-08 (p<0.0001)
+# Conclusion: There is enough evidence that thre is a relationship between mom weight and baby weight. The relationship appears to be positive in that heavier mom weight result in heavier baby weight on average.
+```
+
+### 5. *R-squared*: proportion of variation explained
++ *R-squared*: is the proportion of variance of *y* that can be explained by *x*
+$$R^2=\frac{Reg\space SS\quad(purple)}{Total\space SS}$$
+```{r}
+test %>% summary
+# R-squared = 9600 / (9600 + 394549) = 0.02375362
+# Conclusion: 2.38% of the variation in the baby's birth weight can be explained by the mom's weight.
+```
+
+### 6. t-test for slope
+```{r}
+# We can test the slope by using two methods: F-test OR t-test.
+fit <- lm(wt_baby ~ wt_mom, data = dat_babies)
+
+summary(fit)$fstatistic[1] %>% round(2) # This value is the same with the F-test's statitic.
+
+test <- aov(wt_baby ~ wt_mom, data = dat_babies)
+summary(test) #29.13
+```
+
+### 7. Prediction (그룹 평균으로 예측할 때 / 개인별로 예측할 때)
+```{r}
+# | point estimate | 90% CI lb | 90% CI ub |순으로 아웃풋이 나옴
+
+# 1) Prediction of a mean (그룹 평균 예측)
+result <- predict(fit, newdata = data.frame(wt_mom = 130),
+        interval = "confidence",
+        conf.level = 0.90)
+# Conclusion: On average, babies whose mother's weight is 130 pounds are predicted to weigh 119.69 ounces with 90% CI of 118.65 to 120.72.
+
+# 1) Prediction of an individual value (개인별로 예측)
+# Q: if one mom's weight is 150 pound, what would be her baby's weight?
+summary(fit)$coefficients[1,1] + summary(fit)$coefficients[2,1] * 150
+
+result <- predict(fit, newdata = data.frame(wt_mom = 150),
+        interval="prediction",
+        conf.level = 0.90)
+result
+# Conclusion: A baby whose mother's weight is 150 is predicted to weigh 122.38 ounces with 90% CI of 86.74 to 158.03.
+```
+
+## Activity21
+
+<Question1: Outlier>
+$$y = 10-2x + e\\where\space \varepsilon\space\sim N(0,5)$$
+```{r}
+# Take a random sample of 100 from this population using the code below.
+x1 <- sample(seq(from=1, to=20, by=0.1), 100, replace = T)
+y1 <- 10 - 2 * x1 + rnorm(100, 0, 5)
+fit1 <- lm(y1 ~ x1)
+
+# Change one point to (10, -50)
+x2 = x1
+y2 = y1
+x2[1] = 10 
+y2[1] = -50
+
+# Create another model: fit2
+fit2 <- lm(y2 ~ x2)
+
+# Residual value of the point (10, -50)
+fit2$residuals[1]
+fit2$residuals[rev(order(abs(fit2$residuals)))] %>% head()
+plot(x2, fit2$residuals, pch=19, main="Residuals vs X values")
+    # > The residual for the point (10, -50) is -40.2, and it is much larger in abolsute value than all other residuals. The next largest residual is -9.5.
+
+# Plot the original line and the line with the oulier.
+plot(x2,y2, pch=19) 
+points(10,-50, pch=19,col="red") 
+abline(fit1,lwd=2) 
+abline(fit2,col="red", lwd=2) 
+legend("bottomleft", col=c(1,"red"), 
+       c("Original line","Outlier line"),lty=c(1,1))
+    # > Since there is no much difference between the lines with or without the point (10, -50), we can say that it is an *outlier*.
+```
+
+<Question2: Influential point>
+```{r}
+# Change the first data pair from (10, -50) to be (30, 30).
+x3 = x1
+y3 = y1
+x3[1] = 30
+y3[1] = 30
+
+# Find the fitted line.
+fit3 <- lm(y3 ~ x3)
+
+# The residual value of the point (30, 30)
+fit3$residuals[1]
+fit3$residuals[rev(order(abs(fit3$residuals)))] %>% head()
+plot(x3, fit3$residuals, pch=19, main="Residuals vs X values")
+    # > The residual for the point (30, 30) is 70.5, and it is much larger in abolsute value than all other residuals. The next largest residual is -13.2.
+
+# Plot the original line and the line with the oulier.
+plot(x3,y3, pch=19) 
+points(30,30, pch=19,col="red") 
+abline(fit1,lwd=2) 
+abline(fit3,col="red", lwd=2) 
+legend("bottomleft",col=c(1,"red"),
+       c("Original line","Influential point line"),lty=c(1,1))
+    # > Since there is much difference between the lines with or without the point (30, 30), we can say that it is an *influential point*.
+```
+
+<Question3: Diagnostics and Prediction>
+```{r}
+dat_brain <- read.csv("brainSize.csv") %>%
+    mutate(MRI_count_thou = MRI_Count/1000)
+```
+
+```{r}
+# Plot the relationship between verbal IQ and brain size. Describe the relationship.
+fit <- lm(VIQ ~ MRI_count_thou, data=dat_brain)
+plot(VIQ ~ MRI_count_thou, data = dat_brain,
+     pch=19, main = "Verbal IQ vs Brain Size",
+     xlab="Brain Size (MRI count thousands)") 
+abline(fit, lwd = 4, col = 2)
+    # > There is a weak positive relationship between brain size and verbal IQ. (the estimate of slope = 0.1103)
+
+
+
+# Check the linear regression assumptions
+    # 1)
+plot(fit, which = c(1,2))
+
+    # 2) residual plot (y-hat)
+plot(dat_brain$MRI_count_thou, fit$residuals,pch=19) 
+abline(0,0,lty=2)
+
+qqnorm(fit$residuals,pch=20,col="dodgerblue")
+qqline(fit$residuals,col="brown", lwd=4)
+    # > The relationship seems to be linear, and no major heteroscedasticity was detected. However, the normality assumption of the residuals may not for more extreme values of MRI counts.
+
+
+
+# Hypothesis test for association between verbal IQ and brain size
+# 1) F-test
+
+# The hypotheses are:
+    # H_0: (\beta = 0) There is no relationship between verbal IQ and brain size.
+    # H_a: (\beta \ne 0) There is a relationship between verbal IQ and brain size.
+
+test <- aov(VIQ ~ MRI_count_thou, data = dat_brain)
+test %>% summary
+# F-statitic = 4.884
+# p-value from F distribution with df = 1 and 38: 0.0332
+# Conclusion: There is enough evidence that thre is a relationship between mom weight and baby weight. The relationship appears to be positive in that heavier mom weight result in heavier baby weight on average.
+# Conclusion: There is enough evidence that there is a relationship between verbal IQ and brain size. Larger values of MRI counts are associated with higher scores on verbal IQ test.
+
+
+
+# The averge verbal IQ among individuals with a MRI count of 900,000?
+result <- predict(fit, newdata = data.frame(MRI_count_thou = 900000/1000),
+        interval = "confidence",
+        conf.level = 0.99)
+result
+# Conclusion: On average, individuals with MRI counts of 900,000 will have average verbal IQ scores of 111.3847 with 99% CI from 104.12 to 118.65.
+
+
+
+# The predicted verbal IQ for an individual with a MRI count of 900,000?
+summary(fit)$coefficients[1,1] + summary(fit)$coefficients[2,1] * 900000/1000
+
+result <- predict(fit, newdata = data.frame(MRI_count_thou = 900000/1000),
+        interval="prediction",
+        conf.level = 0.99)
+result
+# Conclusion: One individual with MRI counts of 900,000 will have a verbal IQ score of 111.3847 with 99% CI from 65.22 to 157.55.
+
+
+
+# Why do the CIs in group vs. individual?
+# > It is much harder to predict an individual measurement than the average measurement for many individuals.
+```
+
+***
+
+## Lecture22: Simpson's Paradox and Confounding
+### 1. Simpson's Paradox
++ After adjusting for weight, the analysis shows negative association between pasta consumption and BMI, suggesting that eating pasta might actually lead to a lower BMI.
++ The trend seen in aggregate data my be reversed when the data is stratified.
+
+### 2. Association(Correlation) is NOT causation
+```{r}
+# Would you advise women to reduce their coffee consumption? Explain.
+# A: No. From our analysis we can only demostrate associations, but advising women to reduce their coffee consumption would require evidence of a causal relationship 
+```
+
+1) Examples of Associations
++ as ice cream sales increase, the rate of drowning deaths increases sharply 
++ significant relationship between wearing XXL clothes and heart attack
++ sleeping with one's shoes on is strongly correlated with waking up with a headache 
++ since the 1950s, both the atmospheric CO2 level and obesity levels have increased sharply
+
+2) quick test
+```{r}
+# 1. You performed a significance test and got a p-value of 0.015. This means there is a 1.5% chance that the null hypothesis is true.
+
+F # Wrong definition of the p-value: The probability of getting our result, or one more extreme, ASSUMING the null hypothesis is true.
+
+# 2. A non-significant difference (e.g. say a p-value > 0.10) means there is no difference between the groups.
+
+F # A: There is no evidence that there is no differenxe between groups
+
+# 3. If a 95% CI for a difference in two means contains 0, a two-sided hypothesis test would have a p-value greater than 0.05.
+T
+
+# 4. If you want to decrease the sample size for a study (while keeping the same power and significance level), you would decrease the minimum detectable diﬀerence.
+F
+
+# 5. Suppose you are doing a test of significance for a single proportion. Suppose your null hypothesis is that π = 0.75. You get a sample proportion value of p = 0.80 and it was statistically significant at the (two-sided) 0.05 level. What values of p below would you be certain are statistically significant at the 0.05 level.
+# choices: 0.83     0.77    0.30
+```
+
+## Activity22
+You will perform an analysis of graduate admissions to the University of California, Berkeley, for fall 1973. There are four diﬀerent variables. The data are in `admissions.csv`.
+
++ `X`: student identifier 
++ `gender`: male or female 
++ `decision`: an indication of whether the student was admitted or not (denied) 
++ `department`: the department to which the student applied (six largest departments). These are labeled `a`, `b`, `c`, `d`, `e`, or `f`.
+```{r}
+dat <- read.csv("admissions.csv")
+```
+
+<Question1: Overall admissions>
+```{r}
+table(dat$decision,dat$gender)
+# convert the observed table to the proportion table
+prop.table(table(dat$decision,dat$gender),2)
+prop.test(table(dat$gender, dat$decision))
+
+# What is the proportion of females admitted?
+557 / (557 + 1278)
+
+# What is the proportion of males admitted?
+1158 / (1158 + 1493)
+
+# Is there a statistically significant difference in the proportion of males and females admitted?
+table(dat$decision,dat$gender)
+test <- prop.test(c(1158, 557), c(1158 + 1493, 557 + 1278), correct = F)
+test
+# > Yes, Since the 95% CI for the difference between two proportions of males and females admitted does not contain 0 (p-value < 0.0001, 95% CI: 10.5% to 16.15%), there is enough evidence that there is difference in the proportions of males and females admitted. It appears as though there is a greater proportion of males admitted compared to the proportion of females admitted. The difference of the proportions is 13.33%.
+```
+
+<Question2: Department `a` admissions>
+```{r}
+dat_a <- dat %>% filter(department == 'a') %>% select(gender, decision)
+mat <- table(dat_a) %>% as.data.frame.matrix()
+# prop.table(table(dat$department, dat$gender), 2)
+
+# What is the proportion of females admitted to department a?
+89 / (89 + 19)
+
+# What is the proportion of males admitted to department a?
+512 / (512 + 313)
+
+# Is there a statistically significant difference in the proportion of males and females admitted to department a?
+test <- prop.test(c(89, 512), c(89 + 19, 512 + 313), correct = F)
+# > Yes, Since the 95% CI for the difference between two proportions of males and females admitted to department a does not contain 0 (p-value < 0.0001, 95% CI: 12.44% to 28.25%), there is enough evidence that there is difference in the proportions of males and females admitted to department a. It appears as though there is a greater proportion of females admitted compared to the proportion of males admitted. The difference of the proportions is 20.35%.
+```
+
+<QUESTION 8: Gender discrimination?> ****
+Is there evidence of gender discrimination? Explain. (`Simpson's paradox`)
+```{r}
+# > While overall the rate of admission is lower for females than males and so perhaps there is discrimination, the rate within each department is either similar or higher in females than males. Therefore, within each department there does not seem to be discrimination against female. However, it would be interesting to study why department to which females apply more often have lower admission rates than those who are most common among male applicants.
+```
+
+<QUESTION 9: Why?> ****
+Why does it appear as though a significantly higher proportion of males are admitted overall but not by each department?
+```{r}
+# This is an example of Simpson's paradox, in which the overall trend (females less likely to be admitted than males) is not true within a confounding group (each department). Women are more likely to apply to departments that have lower admission rates than men.
+```
+
